@@ -1,4 +1,5 @@
 import copy
+
 def minimax(board, depth, isMaximizing,jetonAI, jetonJoueur,dernier_coup=None):
     if dernier_coup is not None and board.check_victoire(dernier_coup[0],dernier_coup[1],jetonAI):
         return (10000,None)

@@ -65,7 +65,7 @@ class Puissance5:
 
         return False
 
-    def nouvellepartie(self):
+    def nouvellepartievsIA(self):
         """
         Fonction principale qui lance la partie.
         Par défaut, on utilise nl = 10 lignes et nc = 10 colonnes
@@ -79,6 +79,7 @@ class Puissance5:
             conversion_lettres_entier[chr(65 + i-1)] = i
 
         compteur = 0
+        depth = 0
         victoire = False
         gagnant = None
         rep = input("Voulez vous commencer ? (répondre par oui ou non)\n")
@@ -91,6 +92,17 @@ class Puissance5:
         else:
             jetonAI,jetonJoueur = 'O', 'X'
 
+        difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n")
+        match difficulte.lower():
+            case "facile":
+                depth = 1
+            case "intermediaire":
+                depth = 3
+            case "intermédiaire":
+                depth = 3
+            case "difficile":
+                depth = 5
+
         while not victoire and compteur < 100:
             compteur += 1
             if jetonAI == 'X':
@@ -100,7 +112,7 @@ class Puissance5:
 
             if isAIturn:
                 print(f"C'est au tour de l'IA {jetonAI} de jouer...")
-                result = ia.minimax(self,1,True,jetonAI,jetonJoueur)
+                result = ia.minimax(self,depth,True,jetonAI,jetonJoueur)
                 self.board[result[1][0]][result[1][1]] = jetonAI
                 os.system('cls' if os.name == 'nt' else 'clear')
                 self.show_board()
@@ -155,6 +167,64 @@ class Puissance5:
                 if self.board[i][j] == ' ':
                     res.append([i, j])
         return res
+
+    def nouvellepartieMultilpayer(self, jeton=('O', 'X')):
+        """
+        Fonction principale qui lance la partie.
+        Par défaut, on utilise nl = 10 lignes et nc = 10 colonnes
+        """
+        os.system('cls' if os.name == 'nt' else 'clear')
+        # affichage de la grille initiale
+        self.show_board()
+        conversion_lettres_entier = {}
+
+        for i in range(1, 11):
+            conversion_lettres_entier[chr(65 + i - 1)] = i
+
+        victoire = False
+        compteur = 0
+
+        while not victoire and compteur < self.nc*self.nl:
+            compteur += 1
+            # Attention, pour l'affichage, on part de joueur 1 et 2, mais pour
+            # l'accès aux jetons, c'est jeton[0] et jeton[1]
+            joueur = (compteur + 1) % 2 + 1
+            while True:
+                print(
+                    f"Joueur {joueur} ({self.jeton[joueur - 1]}), Entre les coordonnées de l'endroit où tu vas jouer (A1, B2...)")
+                coord = input('Cordonnées jouée: ')
+
+                try:
+                    if len(coord) < 2 or len(coord) > 3:
+                        raise ValueError("Format incorrect. Utilisez une lettre suivie d'un nombre (ex: B4).")
+                    lettre = coord[0].upper()
+                    partie_nombre = coord[1:]
+                    if not ('A' <= lettre <= 'J'):
+                        raise ValueError("La lettre doit être comprise entre A et J.")
+                    lettre = int(conversion_lettres_entier[(coord[0].upper())])
+                    nombre = int(partie_nombre)
+                    if not (1 <= nombre <= 10):
+                        raise ValueError("Le nombre doit être compris entre 1 et 10.")
+                    if not (self.board[nombre - 1][lettre - 1] == ' '):
+                        raise ValueError("Cette case a déjà été jouée.")
+                    break
+                except ValueError as erreur:
+                    print(f"Erreur : {erreur}\n")
+
+            colonne = int(conversion_lettres_entier[(coord[0].upper())]) - 1
+            ligne = int(coord[1:]) - 1
+            self.board[ligne][colonne] = self.jeton[joueur - 1]
+
+            os.system('cls' if os.name == 'nt' else 'clear')
+            self.show_board()
+
+            if compteur > 6:  # on vérifie à partir du 7eme coup
+                victoire = self.check_victoire(ligne, colonne, joueur)
+
+        if victoire:
+            print(f"Le Joueur ayant le jeton ({self.jeton[joueur - 1]}) a gagné!")
+        else:
+            print("Match nul!")
 
 
 jeu = Puissance5()
