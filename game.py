@@ -82,18 +82,23 @@ class Puissance5:
         depth = 0
         victoire = False
         gagnant = None
-        rep = input("Voulez vous commencer ? (répondre par oui ou non)\n")
+        rep = input("Voulez vous commencer ? (répondre par oui ou non)\n").lower()
 
-        while rep.lower() != 'oui' and rep.lower() != 'non':
-            rep = input("Voulez vous commencer ? (répondre par oui ou non)\n")
+        while rep != 'oui' and rep != 'non':
+            rep = input("Erreur: répondre (répondre par oui ou non)\n")
 
         if rep == "oui":
             jetonAI,jetonJoueur = 'X', 'O'
         else:
             jetonAI,jetonJoueur = 'O', 'X'
 
-        difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n")
-        match difficulte.lower():
+        difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n").lower()
+
+        while difficulte != "facile" and difficulte != "intermédiaire" and difficulte != "intermediaire" and difficulte != "difficile":
+            difficulte = input("erreur: choisir parmi les difficulés suivantes: (Facile, Intermediaire, Difficile)\n")
+
+
+        match difficulte:
             case "facile":
                 depth = 1
             case "intermediaire":
@@ -102,6 +107,13 @@ class Puissance5:
                 depth = 3
             case "difficile":
                 depth = 5
+
+        evaluate_ouvert = {}
+        evaluate_semi_ouvert = {}
+
+        playstyle = input("Quel style de jeu l'IA doit elle aborder ? (Agressive, Defensive)")
+
+
 
         while not victoire and compteur < 100:
             compteur += 1
@@ -226,5 +238,5 @@ class Puissance5:
         else:
             print("Match nul!")
 
-
-jeu = Puissance5()
+    def watchIAgame(self):
+        

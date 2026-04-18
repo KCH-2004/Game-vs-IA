@@ -36,9 +36,9 @@ def minimax(board, depth, isMaximizing,jetonAI, jetonJoueur,dernier_coup=None):
                 meilleur_coup = coup
         return (meilleur_score, meilleur_coup)
 
-def evaluate (board,jetonAI, jetonJoueur):
-    table_score_ouvert = {1: 1, 2: 5, 3: 50, 4: 1000}
-    table_score_semi_ouvert = {1: 0, 2: 1, 3: 10, 4: 1000}
+def evaluate (board,jetonAI, jetonJoueur,eval_score_ouvert, eval_score_semi_ouvert):
+    eval_score_ouvert = {1: 1, 2: 5, 3: 50, 4: 1000}
+    eval_score_semi_ouvert = {1: 0, 2: 1, 3: 10, 4: 1000}
     score_total = 0
 
     for ligne in board.board:
@@ -50,14 +50,14 @@ def evaluate (board,jetonAI, jetonJoueur):
                 continue
             elif jetonAI in fenetre and jetonJoueur not in fenetre:
                 if gauche_ouverte and droite_ouverte:
-                    score_total += table_score_ouvert[fenetre.count(jetonAI)]
+                    score_total += eval_score_ouvert[fenetre.count(jetonAI)]
                 elif gauche_ouverte or droite_ouverte:
-                    score_total += table_score_semi_ouvert[fenetre.count(jetonAI)]
+                    score_total += eval_score_semi_ouvert[fenetre.count(jetonAI)]
             elif jetonAI not in fenetre and jetonJoueur in fenetre:
                 if gauche_ouverte and droite_ouverte:
-                    score_total -= table_score_ouvert[fenetre.count(jetonJoueur)]
+                    score_total -= eval_score_ouvert[fenetre.count(jetonJoueur)]
                 elif gauche_ouverte or droite_ouverte:
-                    score_total -= table_score_semi_ouvert[fenetre.count(jetonJoueur)]
+                    score_total -= eval_score_semi_ouvert[fenetre.count(jetonJoueur)]
 
     for i in range(6):
         for j in range(6):
@@ -68,14 +68,14 @@ def evaluate (board,jetonAI, jetonJoueur):
                 continue
             elif jetonAI in fenetre and jetonJoueur not in fenetre:
                 if haut_ouverte and bas_ouverte:
-                    score_total += table_score_ouvert[fenetre.count(jetonAI)]
+                    score_total += eval_score_ouvert[fenetre.count(jetonAI)]
                 elif haut_ouverte or bas_ouverte:
-                    score_total += table_score_semi_ouvert[fenetre.count(jetonAI)]
+                    score_total += eval_score_semi_ouvert[fenetre.count(jetonAI)]
             elif jetonAI not in fenetre and jetonJoueur in fenetre:
                 if haut_ouverte and bas_ouverte:
-                    score_total -= table_score_ouvert[fenetre.count(jetonJoueur)]
+                    score_total -= eval_score_ouvert[fenetre.count(jetonJoueur)]
                 elif haut_ouverte or bas_ouverte:
-                    score_total -= table_score_semi_ouvert[fenetre.count(jetonJoueur)]
+                    score_total -= eval_score_semi_ouvert[fenetre.count(jetonJoueur)]
 
     for i in range(4,10):
         for j in range(6):
@@ -86,14 +86,14 @@ def evaluate (board,jetonAI, jetonJoueur):
                 continue
             elif jetonAI in fenetre and jetonJoueur not in fenetre:
                 if diag_haute_ouverte and diag_basse_ouverte:
-                    score_total += table_score_ouvert[fenetre.count(jetonAI)]
+                    score_total += eval_score_ouvert[fenetre.count(jetonAI)]
                 elif diag_haute_ouverte or diag_basse_ouverte:
-                    score_total += table_score_semi_ouvert[fenetre.count(jetonAI)]
+                    score_total += eval_score_semi_ouvert[fenetre.count(jetonAI)]
             elif jetonAI not in fenetre and jetonJoueur in fenetre:
                 if diag_haute_ouverte and diag_basse_ouverte:
-                    score_total -= table_score_ouvert[fenetre.count(jetonJoueur)]
+                    score_total -= eval_score_ouvert[fenetre.count(jetonJoueur)]
                 elif diag_haute_ouverte or diag_basse_ouverte:
-                    score_total -= table_score_semi_ouvert[fenetre.count(jetonJoueur)]
+                    score_total -= eval_score_semi_ouvert[fenetre.count(jetonJoueur)]
 
     for i in range(6):
         for j in range(6):
@@ -104,13 +104,13 @@ def evaluate (board,jetonAI, jetonJoueur):
                 continue
             elif jetonAI in fenetre and jetonJoueur not in fenetre:
                 if diag_haute_ouverte and diag_basse_ouverte:
-                    score_total += table_score_ouvert[fenetre.count(jetonAI)]
+                    score_total += eval_score_ouvert[fenetre.count(jetonAI)]
                 elif diag_haute_ouverte or diag_basse_ouverte:
-                    score_total += table_score_semi_ouvert[fenetre.count(jetonAI)]
+                    score_total += eval_score_semi_ouvert[fenetre.count(jetonAI)]
             elif jetonAI not in fenetre and jetonJoueur in fenetre:
                 if diag_haute_ouverte and diag_basse_ouverte:
-                    score_total -= table_score_ouvert[fenetre.count(jetonJoueur)]
+                    score_total -= eval_score_ouvert[fenetre.count(jetonJoueur)]
                 elif diag_haute_ouverte or diag_basse_ouverte:
-                    score_total -= table_score_semi_ouvert[fenetre.count(jetonJoueur)]
+                    score_total -= eval_score_semi_ouvert[fenetre.count(jetonJoueur)]
 
     return score_total
