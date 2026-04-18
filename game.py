@@ -9,7 +9,6 @@ class Puissance5:
         self.nc = nc
         self.jeton = jeton
         self.board = [[' ' for i in range(nc)] for j in range(nl)]
-        self.nouvellepartie()
 
     def __str__(self):
         board_str = ' '.join([str((i + 1) % 10) for i in range(self.nc)]) + '\n'
@@ -65,6 +64,59 @@ class Puissance5:
 
         return False
 
+    def init_paramIA(self):
+        depth = 0
+        rep = None
+        difficulte = None
+        evaluate_ouvert = {}
+        evaluate_semi_ouvert = {}
+        while True: 
+            try:
+                rep = input("Voulez vous commencer ? (répondre par oui ou non)\n").lower()
+                match rep:
+                    case "oui":
+                        jetonAI,jetonJoueur = 'X', 'O'
+                    case "non":
+                        jetonAI,jetonJoueur = 'O', 'X'
+                    case _:
+                        raise ValueError("La réponse doit être oui ou non")
+                difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n").lower()
+                match difficulte:
+                    case "facile":
+                        depth = 1
+                    case "intermediaire":
+                        depth = 3
+                    case "intermédiaire":
+                        depth = 3
+                    case "difficile":
+                        depth = 5
+                    case _:
+                        raise ValueError("choisir la difficulté parmi celles proposées.")
+                    
+                playstyle = input("Quel style de jeu l'IA doit elle aborder ? (Agressif, Defensif)").lower()
+                if playstyle != "agressif" and playstyle != "defensif":
+                    raise ValueError("Choisir le style de jeu parmi celles proposées")
+                
+                evalMode = input("Quel mode d'évaluation pour l'IA ? (linéaire ou réaliste)").lower()
+                match evalMode:
+                    case "linéaire":
+                        evaluate_ouvert = {1:2, 2:4, 3:6, 4:8,5:10}
+                        evaluate_semi_ouvert = {1:1, 2:2, 3:3, 4:4, 5:5}
+                        break
+                    case "lineaire":
+                        evaluate_ouvert = {1:2, 2:4, 3:6, 4:8,5:10}
+                        evaluate_semi_ouvert = {1:1, 2:2, 3:3, 4:4, 5:5}
+                        break
+                    case "realiste":
+                        evaluate_ouvert = {1: 1, 2: 5, 3: 50, 4: 1000}
+                        evaluate_semi_ouvert = {1: 0, 2: 1, 3: 10, 4: 1000}
+                        break
+                    case _:
+                        raise ValueError("Choisir l'évaluation parmi celles proposées.")
+            except ValueError as erreur:
+                    print(f"Erreur : {erreur}\n")
+        return jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert,evaluate_semi_ouvert
+
     def nouvellepartievsIA(self):
         """
         Fonction principale qui lance la partie.
@@ -79,41 +131,9 @@ class Puissance5:
             conversion_lettres_entier[chr(65 + i-1)] = i
 
         compteur = 0
-        depth = 0
         victoire = False
         gagnant = None
-        rep = input("Voulez vous commencer ? (répondre par oui ou non)\n").lower()
-
-        while rep != 'oui' and rep != 'non':
-            rep = input("Erreur: répondre (répondre par oui ou non)\n")
-
-        if rep == "oui":
-            jetonAI,jetonJoueur = 'X', 'O'
-        else:
-            jetonAI,jetonJoueur = 'O', 'X'
-
-        difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n").lower()
-
-        while difficulte != "facile" and difficulte != "intermédiaire" and difficulte != "intermediaire" and difficulte != "difficile":
-            difficulte = input("erreur: choisir parmi les difficulés suivantes: (Facile, Intermediaire, Difficile)\n")
-
-
-        match difficulte:
-            case "facile":
-                depth = 1
-            case "intermediaire":
-                depth = 3
-            case "intermédiaire":
-                depth = 3
-            case "difficile":
-                depth = 5
-
-        evaluate_ouvert = {}
-        evaluate_semi_ouvert = {}
-
-        playstyle = input("Quel style de jeu l'IA doit elle aborder ? (Agressive, Defensive)")
-
-
+        jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert,evaluate_semi_ouvert = self.init_paramIA()
 
         while not victoire and compteur < 100:
             compteur += 1
@@ -124,7 +144,7 @@ class Puissance5:
 
             if isAIturn:
                 print(f"C'est au tour de l'IA {jetonAI} de jouer...")
-                result = ia.minimax(self,depth,True,jetonAI,jetonJoueur)
+                result = ia.minimax(self,depth,True,jetonAI,jetonJoueur,evaluate_ouvert,evaluate_semi_ouvert,playstyle)
                 self.board[result[1][0]][result[1][1]] = jetonAI
                 os.system('cls' if os.name == 'nt' else 'clear')
                 self.show_board()
@@ -177,8 +197,22 @@ class Puissance5:
         for i in range(10):
             for j in range(10):
                 if self.board[i][j] == ' ':
-                    res.append([i, j])
-        return res
+                    voisin_trouve = False
+                    for decalage_ligne in range (-1,2):
+                        voisin_ligne = i + decalage_ligne
+                        for decalage_colonne in range (-1,2):
+                            voisin_colonne = j + decalage_colonne
+                            if 0 <= voisin_ligne < 10 and 0 <= voisin_colonne < 10:
+                                if self.board[voisin_ligne][voisin_colonne] != ' ':
+                                    voisin_trouve = True
+                                    break
+                        if voisin_trouve:
+                            res.append([i, j])
+                            break
+        if len(res) == 0:
+            return [[4, 4]]
+        else:
+            return res
 
     def nouvellepartieMultilpayer(self, jeton=('O', 'X')):
         """
@@ -237,6 +271,3 @@ class Puissance5:
             print(f"Le Joueur ayant le jeton ({self.jeton[joueur - 1]}) a gagné!")
         else:
             print("Match nul!")
-
-    def watchIAgame(self):
-        
