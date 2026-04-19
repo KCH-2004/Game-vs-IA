@@ -1,5 +1,6 @@
 import os
 import ia
+import time
 
 class Puissance5:
 
@@ -9,6 +10,7 @@ class Puissance5:
         self.nc = nc
         self.jeton = jeton
         self.board = [[' ' for i in range(nc)] for j in range(nl)]
+        self.conversion_lettres_entier = {}
 
     def __str__(self):
         board_str = ' '.join([str((i + 1) % 10) for i in range(self.nc)]) + '\n'
@@ -69,7 +71,6 @@ class Puissance5:
         rep = None
         difficulte = None
         evaluate_ouvert = {}
-        evaluate_semi_ouvert = {}
         while True: 
             try:
                 rep = input("Voulez vous commencer ? (répondre par oui ou non)\n").lower()
@@ -83,13 +84,13 @@ class Puissance5:
                 difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n").lower()
                 match difficulte:
                     case "facile":
-                        depth = 1
+                        depth = 2
                     case "intermediaire":
                         depth = 3
                     case "intermédiaire":
                         depth = 3
                     case "difficile":
-                        depth = 5
+                        depth = 4
                     case _:
                         raise ValueError("choisir la difficulté parmi celles proposées.")
                     
@@ -101,24 +102,21 @@ class Puissance5:
                 match evalMode:
                     case "linéaire":
                         evaluate_ouvert = {0:0,1:2, 2:4, 3:6, 4:8,5:10}
-                        evaluate_semi_ouvert = {0:0,1:1, 2:2, 3:3, 4:4, 5:5}
                         break
                     case "lineaire":
                         evaluate_ouvert = {0:0,1:2, 2:4, 3:6, 4:8,5:10}
-                        evaluate_semi_ouvert = {0:0,1:1, 2:2, 3:3, 4:4, 5:5}
                         break
                     case "realiste":
-                        evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 5000}
-                        evaluate_semi_ouvert = {0:0,1: 0, 2: 1, 3: 10, 4: 5000}
+                        evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 500}
+                        break
                     case "réaliste":
                         evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 5000}
-                        evaluate_semi_ouvert = {0:0,1: 0, 2: 1, 3: 10, 4: 5000}
                         break
                     case _:
                         raise ValueError("Choisir l'évaluation parmi celles proposées.")
             except ValueError as erreur:
                     print(f"Erreur : {erreur}\n")
-        return jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert,evaluate_semi_ouvert
+        return jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert
 
     def nouvellepartievsIA(self):
         """
@@ -127,15 +125,16 @@ class Puissance5:
         """
         os.system('cls' if os.name == 'nt' else 'clear')
         # affichage de la grille initiale
-        conversion_lettres_entier = {}
+        temps_IA = None
+        coup_IA = None
 
         for i in range(1,11):
-            conversion_lettres_entier[chr(65 + i-1)] = i
+            self.conversion_lettres_entier[chr(65 + i-1)] = i
 
         compteur = 0
         victoire = False
         gagnant = None
-        jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert,evaluate_semi_ouvert = self.init_paramIA()
+        jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert = self.init_paramIA()
 
         while not victoire and compteur < 100:
             compteur += 1
@@ -146,18 +145,34 @@ class Puissance5:
 
             if isAIturn:
                 print(f"C'est au tour de l'IA {jetonAI} de jouer...")
-                result = ia.minimax(self,depth,True,jetonAI,jetonJoueur,evaluate_ouvert,evaluate_semi_ouvert,playstyle)
+                start = time.perf_counter()
+                result = ia.minimax(self,depth,True,jetonAI,jetonJoueur,evaluate_ouvert,playstyle)
+                end = time.perf_counter()
+                temps_IA = end - start
+                coup_IA = [chr(65 + (result[1][1])),str(result[1][0]+1)]
                 self.board[result[1][0]][result[1][1]] = jetonAI
-                os.system('cls' if os.name == 'nt' else 'clear')
-                self.show_board()
                 if compteur > 6:  # on vérifie à partir du 7eme coup
                     victoire = self.check_victoire(result[1][0], result[1][1], jetonAI)
                     if victoire:
                         gagnant = jetonAI
             else:
                 while True:
+                    os.system('cls' if os.name == 'nt' else 'clear')
                     self.show_board()
-                    print(f"Joueur (Jeton {jetonJoueur}), Entre les coordonnées de l'endroit où tu vas jouer (A1, B2...)")
+                    if coup_IA is not None:
+                        str_coup = ' '.join(coup_IA)
+                        print(f"Coup joué par l'IA: {str_coup}\n"
+                              f"Temps de réflexion: {temps_IA}\n")
+                    else:
+                        match depth:
+                            case 2:
+                                print(f"C'est parti contre l'IA en mode: facile")
+                            case 3:
+                                print(f"C'est parti contre l'IA en mode: intermédiaire")
+                            case 4:
+                                print(f"C'est parti contre l'IA en mode: difficile")
+
+                    print(f"Joueur (Jeton {jetonJoueur}), Entre les coordonnées de l'endroit où tu vas jouer (A1, B2...)\n")
                     coord = input('Cordonnées jouée: ')
                     try:
                         if len(coord) < 2 or len(coord) > 3:
@@ -166,7 +181,7 @@ class Puissance5:
                         partie_nombre = coord[1:]
                         if not ('A' <= lettre <= 'J'):
                             raise ValueError("La lettre doit être comprise entre A et J.")
-                        lettre = int(conversion_lettres_entier[(coord[0].upper())])
+                        lettre = int(self.conversion_lettres_entier[(coord[0].upper())])
                         nombre = int(partie_nombre)
                         if not (1 <= nombre <= 10):
                             raise ValueError("Le nombre doit être compris entre 1 et 10.")
@@ -176,7 +191,7 @@ class Puissance5:
                     except ValueError as erreur:
                         print(f"Erreur : {erreur}\n")
 
-                colonne = int(conversion_lettres_entier[(coord[0].upper())]) -1
+                colonne = int(self.conversion_lettres_entier[(coord[0].upper())]) -1
                 ligne = int(coord[1:]) -1
                 self.board[ligne][colonne] = jetonJoueur
 
@@ -187,6 +202,9 @@ class Puissance5:
                     victoire = self.check_victoire(ligne, colonne, jetonJoueur)
                     if victoire:
                         gagnant = jetonJoueur
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        self.show_board()
 
         if gagnant == jetonJoueur:
             print("Vous avez gagné!")
@@ -225,10 +243,9 @@ class Puissance5:
         os.system('cls' if os.name == 'nt' else 'clear')
         # affichage de la grille initiale
         self.show_board()
-        conversion_lettres_entier = {}
 
         for i in range(1, 11):
-            conversion_lettres_entier[chr(65 + i - 1)] = i
+            self.conversion_lettres_entier[chr(65 + i - 1)] = i
 
         victoire = False
         compteur = 0
@@ -250,7 +267,7 @@ class Puissance5:
                     partie_nombre = coord[1:]
                     if not ('A' <= lettre <= 'J'):
                         raise ValueError("La lettre doit être comprise entre A et J.")
-                    lettre = int(conversion_lettres_entier[(coord[0].upper())])
+                    lettre = int(self.conversion_lettres_entier[(coord[0].upper())])
                     nombre = int(partie_nombre)
                     if not (1 <= nombre <= 10):
                         raise ValueError("Le nombre doit être compris entre 1 et 10.")
@@ -260,7 +277,7 @@ class Puissance5:
                 except ValueError as erreur:
                     print(f"Erreur : {erreur}\n")
 
-            colonne = int(conversion_lettres_entier[(coord[0].upper())]) - 1
+            colonne = int(self.conversion_lettres_entier[(coord[0].upper())]) - 1
             ligne = int(coord[1:]) - 1
             self.board[ligne][colonne] = self.jeton[joueur - 1]
 
@@ -269,6 +286,9 @@ class Puissance5:
 
             if compteur > 6:  # on vérifie à partir du 7eme coup
                 victoire = self.check_victoire(ligne, colonne, joueur)
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        self.show_board()
 
         if victoire:
             print(f"Le Joueur ayant le jeton ({self.jeton[joueur - 1]}) a gagné!")
