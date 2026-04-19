@@ -100,16 +100,19 @@ class Puissance5:
                 evalMode = input("Quel mode d'évaluation pour l'IA ? (linéaire ou réaliste)").lower()
                 match evalMode:
                     case "linéaire":
-                        evaluate_ouvert = {1:2, 2:4, 3:6, 4:8,5:10}
-                        evaluate_semi_ouvert = {1:1, 2:2, 3:3, 4:4, 5:5}
+                        evaluate_ouvert = {0:0,1:2, 2:4, 3:6, 4:8,5:10}
+                        evaluate_semi_ouvert = {0:0,1:1, 2:2, 3:3, 4:4, 5:5}
                         break
                     case "lineaire":
-                        evaluate_ouvert = {1:2, 2:4, 3:6, 4:8,5:10}
-                        evaluate_semi_ouvert = {1:1, 2:2, 3:3, 4:4, 5:5}
+                        evaluate_ouvert = {0:0,1:2, 2:4, 3:6, 4:8,5:10}
+                        evaluate_semi_ouvert = {0:0,1:1, 2:2, 3:3, 4:4, 5:5}
                         break
                     case "realiste":
-                        evaluate_ouvert = {1: 1, 2: 5, 3: 50, 4: 1000}
-                        evaluate_semi_ouvert = {1: 0, 2: 1, 3: 10, 4: 1000}
+                        evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 5000}
+                        evaluate_semi_ouvert = {0:0,1: 0, 2: 1, 3: 10, 4: 5000}
+                    case "réaliste":
+                        evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 5000}
+                        evaluate_semi_ouvert = {0:0,1: 0, 2: 1, 3: 10, 4: 5000}
                         break
                     case _:
                         raise ValueError("Choisir l'évaluation parmi celles proposées.")
@@ -124,7 +127,6 @@ class Puissance5:
         """
         os.system('cls' if os.name == 'nt' else 'clear')
         # affichage de la grille initiale
-        self.show_board()
         conversion_lettres_entier = {}
 
         for i in range(1,11):
@@ -154,6 +156,7 @@ class Puissance5:
                         gagnant = jetonAI
             else:
                 while True:
+                    self.show_board()
                     print(f"Joueur (Jeton {jetonJoueur}), Entre les coordonnées de l'endroit où tu vas jouer (A1, B2...)")
                     coord = input('Cordonnées jouée: ')
                     try:

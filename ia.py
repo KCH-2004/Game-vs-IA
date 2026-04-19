@@ -60,6 +60,8 @@ def evaluate (board,jetonAI, jetonJoueur,eval_score_ouvert, eval_score_semi_ouve
                     score_total += eval_score_semi_ouvert[fenetre.count(jetonAI)]*2
                 else:
                     score_total += eval_score_semi_ouvert[fenetre.count(jetonAI)]
+            else:
+                score_total += eval_score_ouvert[fenetre.count(jetonAI)]
         elif jetonAI not in fenetre and jetonJoueur in fenetre:
             if ouvertureA and ouvertureB:
                 if playstyle == "defensif":
@@ -71,6 +73,8 @@ def evaluate (board,jetonAI, jetonJoueur,eval_score_ouvert, eval_score_semi_ouve
                     score_total -= eval_score_semi_ouvert[fenetre.count(jetonJoueur)]*2
                 else:
                     score_total -= eval_score_semi_ouvert[fenetre.count(jetonJoueur)]
+            else:
+                score_total -= eval_score_ouvert[fenetre.count(jetonJoueur)]
         
     for ligne in board.board:
         for i in range(6):
@@ -79,7 +83,7 @@ def evaluate (board,jetonAI, jetonJoueur,eval_score_ouvert, eval_score_semi_ouve
             fenetre = ligne[i:i + 5]
             analysefenetre(fenetre,gauche_ouverte,droite_ouverte)
 
-    for i in range(6):
+    for i in range(10):
         for j in range(6):
             haut_ouverte = (j > 0) and (board.board[j-1][i] == ' ')
             bas_ouverte = (j+5 < 10) and (board.board[j+5][i] == ' ')
@@ -89,13 +93,13 @@ def evaluate (board,jetonAI, jetonJoueur,eval_score_ouvert, eval_score_semi_ouve
     for i in range(4,10):
         for j in range(6):
             diag_haute_ouverte = (j > 0) and (i < 9) and (board.board[j-1][i+1] == ' ')
-            diag_basse_ouverte = (j+5 < 9) and (i-5 >= 0) and (board.board[j+5][i-5] == ' ')
+            diag_basse_ouverte = (j+5 < 10) and (i-5 >= 0) and (board.board[j+5][i-5] == ' ')
             fenetre = [board.board[j+k][i-k] for k in range(5)]
             analysefenetre(fenetre,diag_haute_ouverte,diag_basse_ouverte)
     for i in range(6):
         for j in range(6):
             diag_haute_ouverte = (j > 0) and (i > 0) and (board.board[j-1][i-1] == ' ')
-            diag_basse_ouverte = (j+5 < 9) and (i+5 < 9) and (board.board[j+5][i+5] == ' ')
+            diag_basse_ouverte = (j+5 < 10) and (i+5 < 9) and (board.board[j+5][i+5] == ' ')
             fenetre = [board.board[j+k][i+k] for k in range(5)]
             analysefenetre(fenetre,diag_haute_ouverte,diag_basse_ouverte)
     return score_total
