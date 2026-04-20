@@ -19,6 +19,7 @@ class Puissance5:
         return board_str
 
     def show_board(self):
+        print()
         print("━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓")
         for i in range(1,self.nl+1):
             ligne_valeurs = "  ┃  ".join(self.board[i-1])
@@ -67,56 +68,74 @@ class Puissance5:
         return False
 
     def init_paramIA(self):
-        depth = 0
-        rep = None
-        difficulte = None
-        evaluate_ouvert = {}
-        while True: 
-            try:
-                rep = input("Voulez vous commencer ? (répondre par oui ou non)\n").lower()
-                match rep:
-                    case "oui":
-                        jetonAI,jetonJoueur = 'X', 'O'
-                    case "non":
-                        jetonAI,jetonJoueur = 'O', 'X'
-                    case _:
-                        raise ValueError("La réponse doit être oui ou non")
-                difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n").lower()
-                match difficulte:
-                    case "facile":
-                        depth = 2
-                    case "intermediaire":
-                        depth = 3
-                    case "intermédiaire":
-                        depth = 3
-                    case "difficile":
-                        depth = 4
-                    case _:
-                        raise ValueError("choisir la difficulté parmi celles proposées.")
-                    
-                playstyle = input("Quel style de jeu l'IA doit elle aborder ? (Agressif, Defensif)").lower()
-                if playstyle != "agressif" and playstyle != "defensif":
-                    raise ValueError("Choisir le style de jeu parmi celles proposées")
-                
-                evalMode = input("Quel mode d'évaluation pour l'IA ? (linéaire ou réaliste)").lower()
-                match evalMode:
-                    case "linéaire":
-                        evaluate_ouvert = {0:0,1:2, 2:4, 3:6, 4:8,5:10}
-                        break
-                    case "lineaire":
-                        evaluate_ouvert = {0:0,1:2, 2:4, 3:6, 4:8,5:10}
-                        break
-                    case "realiste":
-                        evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 500}
-                        break
-                    case "réaliste":
-                        evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 5000}
-                        break
-                    case _:
-                        raise ValueError("Choisir l'évaluation parmi celles proposées.")
-            except ValueError as erreur:
+            while True:
+                try:
+                    isStarting = input("Voulez vous commencer ? (répondre par oui ou non)\n").lower()
+                    match isStarting:
+                        case "oui":
+                            jetonAI,jetonJoueur = 'X', 'O'
+                            break
+                        case "non":
+                            jetonAI,jetonJoueur = 'O', 'X'
+                            break
+                        case _:
+                            raise ValueError("La réponse doit être oui ou non")
+                except ValueError as erreur:
                     print(f"Erreur : {erreur}\n")
-        return jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert
+
+            while True:
+                try:
+                    difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n").lower()
+                    match difficulte:
+                        case "facile":
+                            depth = 1
+                            break
+                        case "intermediaire":
+                            depth = 2
+                            break
+                        case "intermédiaire":
+                            depth = 2
+                            break
+                        case "difficile":
+                            depth = 3
+                            break
+                        case _:
+                            raise ValueError("choisir la difficulté parmi celles proposées.")
+                except ValueError as erreur:
+                        print(f"Erreur : {erreur}\n")
+
+            while True:
+                try:
+                    playstyle = input("Quel style de jeu l'IA doit elle aborder ? (Agressif, Defensif)").lower()
+                    if playstyle != "agressif" and playstyle != "defensif":
+                        raise ValueError("Choisir le style de jeu parmi celles proposées")
+                    else:
+                        break
+                except ValueError as erreur:
+                    print(f"Erreur : {erreur}\n")
+
+            while True:
+                try:
+                    evalMode = input("Quel mode d'évaluation pour l'IA ? (linéaire ou réaliste)").lower()
+                    match evalMode:
+                        case "linéaire":
+                            evaluate_ouvert = {0:0,1:2, 2:3, 3:4, 4:5,5:6}
+                            break
+                        case "lineaire":
+                            evaluate_ouvert = {0:0,1:2, 2:3, 3:4, 4:5,5:6}
+                            break
+                        case "realiste":
+                            evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 500}
+                            break
+                        case "réaliste":
+                            evaluate_ouvert = {0:0,1: 1, 2: 5, 3: 50, 4: 500}
+                            break
+                        case _:
+                            raise ValueError("Choisir l'évaluation parmi celles proposées.")
+                except ValueError as erreur:
+                    print(f"Erreur : {erreur}\n")
+
+            return jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert
 
     def nouvellepartievsIA(self):
         """
@@ -258,6 +277,7 @@ class Puissance5:
             while True:
                 print(
                     f"Joueur {joueur} ({self.jeton[joueur - 1]}), Entre les coordonnées de l'endroit où tu vas jouer (A1, B2...)")
+                if compteur > 1: print(f"dernier coup joué par le joueur {self.jeton[joueur - 1]}: {coord}")
                 coord = input('Cordonnées jouée: ')
 
                 try:
@@ -285,10 +305,7 @@ class Puissance5:
             self.show_board()
 
             if compteur > 6:  # on vérifie à partir du 7eme coup
-                victoire = self.check_victoire(ligne, colonne, joueur)
-
-        os.system('cls' if os.name == 'nt' else 'clear')
-        self.show_board()
+                victoire = self.check_victoire(ligne, colonne, self.jeton[joueur - 1])
 
         if victoire:
             print(f"Le Joueur ayant le jeton ({self.jeton[joueur - 1]}) a gagné!")

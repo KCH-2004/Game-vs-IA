@@ -2,10 +2,10 @@ import copy
 
 def minimax(board, depth, isMaximizing, jetonAI, jetonJoueur, eval_score_ouvert, playstyle,alpha=float("-inf"),beta=float("inf"),dernier_coup=None):
     if dernier_coup is not None and board.check_victoire(dernier_coup[0],dernier_coup[1],jetonAI):
-        return (10000,None)
+        return (100000,None)
 
     if dernier_coup is not None and board.check_victoire(dernier_coup[0],dernier_coup[1],jetonJoueur):
-        return (-10000,None)
+        return (-100000,None)
 
     if not board.get_remain_moves():
         return (0,None)
@@ -50,11 +50,17 @@ def evaluate (board,jetonAI, jetonJoueur,eval_score_ouvert, playstyle):
         if jetonAI in fenetre and jetonJoueur in fenetre:
                 return
         elif jetonAI in fenetre and jetonJoueur not in fenetre:
+            if fenetre.count(jetonAI) == 4:
+                score_total += 4000
+                return
             if playstyle == "agressif":
                 score_total += eval_score_ouvert[fenetre.count(jetonAI)]*2
             else:
                 score_total += eval_score_ouvert[fenetre.count(jetonAI)]
         elif jetonAI not in fenetre and jetonJoueur in fenetre:
+            if fenetre.count(jetonJoueur) == 4:
+                score_total -= 9000
+                return
             if playstyle == "defensif":
                 score_total -= eval_score_ouvert[fenetre.count(jetonJoueur)]*2
             else:
