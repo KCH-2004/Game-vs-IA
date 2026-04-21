@@ -4,15 +4,15 @@ if __name__ =="__main__":
     jeu = Puissance5()
     while True:
         try:
-            rep = input("jouer contre un humain ou une ia ?")
-            match rep:
+            rep = input("jouer contre un humain, une ia, ou générer des données ia vs ia ? (répondre humain, ia ou data)")
+            match rep.lower():
                 case "ia":
                     jeu.nouvellepartievsIA()
                     break
                 case "humain":
                     jeu.nouvellepartieMultilpayer()
                     break
-                case "showmatch":
+                case "data":
                     data.IAMatch()
                     break
                 case _:
