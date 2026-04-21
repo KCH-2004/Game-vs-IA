@@ -1,5 +1,5 @@
 from game import Puissance5
-
+import data
 if __name__ =="__main__":
     jeu = Puissance5()
     while True:
@@ -11,6 +11,9 @@ if __name__ =="__main__":
                     break
                 case "humain":
                     jeu.nouvellepartieMultilpayer()
+                    break
+                case "showmatch":
+                    data.IAMatch()
                     break
                 case _:
                     raise ValueError("Choisissze un mode existant (humain, ia, data)")

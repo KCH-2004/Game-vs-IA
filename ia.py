@@ -111,6 +111,6 @@ class AI:
         result = self.minimax(board,self.depth,True)
         end = time.perf_counter()
         self.tempsReflexion = end - start
-        self.dernierCoup = f"{chr(65 + (result[1][1]))(result[1][0]+1)}"
+        self.dernierCoup = f"{chr(65 + (result[1][1]))}{(result[1][0]+1)}"
 
         return result
