@@ -1,6 +1,5 @@
 import os
 import ia
-import time
 
 class Puissance5:
 
@@ -144,8 +143,6 @@ class Puissance5:
         """
         os.system('cls' if os.name == 'nt' else 'clear')
         # affichage de la grille initiale
-        temps_IA = None
-        coup_IA = None
 
         for i in range(1,11):
             self.conversion_lettres_entier[chr(65 + i-1)] = i
@@ -153,7 +150,8 @@ class Puissance5:
         compteur = 0
         victoire = False
         gagnant = None
-        jetonAI,jetonJoueur,depth,playstyle,evaluate_ouvert = self.init_paramIA()
+        jetonAI,jetonJoueur,depth,playstyle,evaluate_score = self.init_paramIA()
+        botJeu = ia.AI(jetonAI,jetonJoueur,depth,playstyle,evaluate_score)
 
         while not victoire and compteur < 100:
             compteur += 1
@@ -164,11 +162,7 @@ class Puissance5:
 
             if isAIturn:
                 print(f"C'est au tour de l'IA {jetonAI} de jouer...")
-                start = time.perf_counter()
-                result = ia.minimax(self,depth,True,jetonAI,jetonJoueur,evaluate_ouvert,playstyle)
-                end = time.perf_counter()
-                temps_IA = end - start
-                coup_IA = [chr(65 + (result[1][1])),str(result[1][0]+1)]
+                result = botJeu.get_best_move(self)
                 self.board[result[1][0]][result[1][1]] = jetonAI
                 if compteur > 6:  # on vérifie à partir du 7eme coup
                     victoire = self.check_victoire(result[1][0], result[1][1], jetonAI)
@@ -178,10 +172,9 @@ class Puissance5:
                 while True:
                     os.system('cls' if os.name == 'nt' else 'clear')
                     self.show_board()
-                    if coup_IA is not None:
-                        str_coup = ' '.join(coup_IA)
-                        print(f"Coup joué par l'IA: {str_coup}\n"
-                              f"Temps de réflexion: {temps_IA}\n")
+                    if botJeu.getDernierCoup() is not None:
+                        print(f"Coup joué par l'IA: {botJeu.getDernierCoup()}\n"
+                              f"Temps de réflexion: {botJeu.tempsReflexion}\n")
                     else:
                         match depth:
                             case 2:
