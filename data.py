@@ -2,14 +2,53 @@ import ia
 import game
 import csv
 
+class IAStats:
+
+    def __init__(self, nomIA):
+        self.nomIA = nomIA
+        self.victoires = 0
+        self.nuls = 0
+        self.defaites = 0
+        self.tps_total = 0
+        self.coups_totaux = 0
+        self.matchups = {}
+
+    def get_winrate(self):
+        return self.victoires / (self.nuls + self.defaites)
+    
+    def get_average_time(self):
+        return self.tps_total/self.coups_totaux
+    
+    def get_nom(self):
+        return self.nomIA
+    
+    def add_stats(self, datas, matchup):
+        self.matchups.setdefault(matchup, {"victoire": 0, "defaite": 0, "nul": 0})
+        match datas["estGagnant"]:
+
+            case True:
+                self.victoires +=1
+                self.matchups[matchup]["victoires"] += 1
+
+            case False:
+                self.defaites +=1
+                self.matchups[matchup]["défaites"] += 1
+
+            case _:
+                self.nuls +=1
+                self.matchups[matchup]["nuls"] += 1
+        
+        self.tps_total += datas["tpsReflexion"]
+        self.coups_totaux += datas["nbCoups"]
+
 def IAMatch(bot1,bot2):
 
     gameStart = game.Puissance5()
     compteur = 0
     victoire = False
     gagnant = None
-    bot1Data = {"estGagnant":False,"tpsReflexionMoy": 0} 
-    bot2Data = {"estGagnant":False,"tpsReflexionMoy": 0}
+    bot1Data = {"estGagnant":False,"tpsReflexion": 0, "nbCoups": 0} 
+    bot2Data = {"estGagnant":False,"tpsReflexion": 0, "nbCoups": 0}
     isBot1Starting = bot1.jetonAI == 'O'
 
     while not victoire and compteur < 100:
@@ -22,7 +61,7 @@ def IAMatch(bot1,bot2):
 
         if isBot1turn:
             result = bot1.get_best_move(gameStart)
-            bot1Data['tpsReflexionMoy'] += bot1.getTempsReflexion()
+            bot1Data['tpsReflexion'] += bot1.getTempsReflexion()
             gameStart.board[result[1][0]][result[1][1]] = bot1.jetonAI
 
             if compteur > 6:  # on vérifie à partir du 7eme coup
@@ -33,7 +72,7 @@ def IAMatch(bot1,bot2):
 
         else:
             result = bot2.get_best_move(gameStart)
-            bot2Data['tpsReflexionMoy'] += bot2.getTempsReflexion()
+            bot2Data['tpsReflexion'] += bot2.getTempsReflexion()
             gameStart.board[result[1][0]][result[1][1]] = bot2.jetonAI
 
             if compteur > 6:  # on vérifie à partir du 7eme coup
@@ -41,7 +80,8 @@ def IAMatch(bot1,bot2):
 
                 if victoire:
                     gagnant = bot2.jetonAI
-    """if gagnant == bot1.jetonAI:
+    """if gagnant == bot1.jetonAI: #Vérification du résultat (Si les bots jouent bien, 
+                                                              si la partie est différente de la précédente)
         gameStart.show_board()
         print("Bot 1 Winner")
     else:
@@ -51,39 +91,36 @@ def IAMatch(bot1,bot2):
     if gagnant == bot1.jetonAI:
 
         if isBot1Starting: #Si le bot1 a commencé et a gagné (son nombre de coups est donc impair)
-            bot1Data['tpsReflexionMoy'] /= ((compteur//2) + 1)
-            bot2Data['tpsReflexionMoy'] /= compteur//2
+            bot1Data['nbCoups'] /= ((compteur//2) + 1)
+            bot2Data['nbCoups'] /= compteur//2
 
         else: #Dans le cas contraire, le coup gagnant est sur un compteur pair
-            bot1Data['tpsReflexionMoy'] /= compteur//2
-            bot2Data['tpsReflexionMoy'] /= compteur//2
+            bot1Data['nbCoups'] /= compteur//2
+            bot2Data['nbCoups'] /= compteur//2
+
         bot1Data['estGagnant'] = True
         bot2Data['estGagnant'] = False
-
-        return bot1Data,bot2Data
     
     elif gagnant == bot2.jetonAI:
 
         if not isBot1Starting: #Même logique ici
-            bot2Data['tpsReflexionMoy'] /= ((compteur//2) + 1)
-            bot1Data['tpsReflexionMoy'] /= compteur//2
+            bot2Data['nbCoups'] /= ((compteur//2) + 1)
+            bot1Data['nbCoups'] /= compteur//2
 
         else: #Dans le cas contraire, le coup gagnant est sur un compteur pair
-            bot2Data['tpsReflexionMoy'] /= compteur//2
-            bot1Data['tpsReflexionMoy'] /= compteur//2
+            bot2Data['nbCoups'] /= compteur//2
+            bot1Data['nbCoups'] /= compteur//2
 
         bot2Data['estGagnant'] = True
         bot1Data['estGagnant'] = False
 
-        return bot1Data,bot2Data
-    
     else: 
-        bot1Data['tpsReflexionMoy'] /= compteur//2
-        bot2Data['tpsReflexionMoy'] /= compteur//2
-        bot1Data['estGagnant'] = False
-        bot2Data['estGagnant'] = False
+        bot1Data['nbCoups'] /= compteur//2
+        bot2Data['nbCoups'] /= compteur//2
+        bot1Data['estGagnant'] = None
+        bot2Data['estGagnant'] = None
 
-        return bot1Data,bot2Data
+    return bot1Data,bot2Data
 
 def analyseData():
 
@@ -106,38 +143,81 @@ def analyseData():
     bot3DefStart = ia.AI('O','X',3,"Defensif")
     bot3DefNotStart = ia.AI('X','O',3,"Defensif")
 
-    #Nommage des données: + data + nom de l'IA
-    for i in range(55):
+    #Création d'objets permettant de stocker efficacement les données
+    bot1AgroStats = IAStats("bot1AgroStats")
+    bot2AgroStats = IAStats("bot1AgroStats")
+    bot3AgroStats = IAStats("bot1AgroStats")
+    bot1DefStats = IAStats("bot1DefStats")
+    bot2DefStats = IAStats("bot2DefStats")
+    bot3DefStats = IAStats("bot3DefStats")
 
+    with open('data.csv','w',newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerow('Bot')
+        spamwriter.writerow('Bot1Agressif')
+        spamwriter.writerow('Bot2Agressif')
+        spamwriter.writerow('Bot3Agressif')
+        spamwriter.writerow('Bot4Agressif')
+        spamwriter.writerow('Bot5Agressif')
+        spamwriter.writerow('Bot6Agressif')
+
+    for i in range(50):
+        
+        #Nommage des données: + data + nom de l'IA
         dataBot1AgroStart, dataBot1AgroNotStart = IAMatch(bot1AgroStart,bot1AgroNotStart)
         dataBot2AgroStart, dataBot2AgroNotStart = IAMatch(bot2AgroStart,bot2AgroNotStart)
         dataBot3AgroStart, dataBot3AgroNotStart = IAMatch(bot3AgroStart,bot3AgroNotStart)
-
 
         dataBot1DefStart, dataBot1DefNotStart = IAMatch(bot1DefStart,bot1DefNotStart)
         dataBot2DefStart, dataBot2DefNotStart = IAMatch(bot2DefStart,bot2DefNotStart)
         dataBot3DefStart, dataBot3DefNotStart = IAMatch(bot3DefStart,bot3DefNotStart)
 
+        bot1AgroStats.add_stats(dataBot1AgroStart,"bot1Agro")
+        bot2AgroStats.add_stats(dataBot2AgroStart,"bot2Agro")
+        bot3AgroStats.add_stats(dataBot3AgroStart,"bot3Agro")
 
-        dataBot1AgroStart, dataBot2AgroNotStart
-        dataBot2AgroStart, dataBot1AgroNotStart
+        bot1DefStats.add_stats(dataBot1DefStart,"bot1Def")
+        bot2DefStats.add_stats(dataBot2DefStart,"bot2Def")
+        bot3DefStats.add_stats(dataBot3DefStart,"bot3Def")
+    
+    for i in range(25):
 
-        dataBot1AgroStart, dataBot3AgroNotStart
-        dataBot3AgroStart, dataBot1AgroNotStart
+        dataBot1AgroStart, dataBot2AgroNotStart = IAMatch(bot1AgroStart, bot2AgroNotStart)
+        dataBot2AgroStart, dataBot1AgroNotStart = IAMatch(bot2AgroStart, bot1AgroNotStart)
+
+        dataBot1AgroStart, dataBot3AgroNotStart = IAMatch(bot1AgroStart, bot3AgroNotStart)
+        dataBot3AgroStart, dataBot1AgroNotStart = IAMatch(bot3AgroStart, bot1AgroNotStart)
         
-        dataBot2AgroStart, dataBot3AgroNotStart
-        dataBot3AgroStart, dataBot2AgroNotStart
+        dataBot2AgroStart, dataBot3AgroNotStart = IAMatch(bot2AgroStart, bot3AgroNotStart)
+        dataBot3AgroStart, dataBot2AgroNotStart = IAMatch(bot3AgroStart, bot2AgroNotStart)
 
 
-        dataBot1DefStart, dataBot2DefNotStart
-        dataBot2DefStart, dataBot1DefNotStart
+        dataBot1DefStart, dataBot2DefNotStart = IAMatch(bot1DefStart, bot2DefNotStart)
+        dataBot2DefStart, dataBot1DefNotStart = IAMatch(bot2DefStart, bot1DefNotStart)
 
-        dataBot1DefStart, dataBot3DefNotStart
-        dataBot3DefStart, dataBot1DefNotStart
+        dataBot1DefStart, dataBot3DefNotStart = IAMatch(bot1DefStart, bot3DefNotStart)
+        dataBot3DefStart, dataBot1DefNotStart = IAMatch(bot3DefStart, bot1DefNotStart)
 
-        dataBot2DefStart, dataBot3DefNotStart
-        dataBot3DefStart, dataBot2DefNotStart
+        dataBot2DefStart, dataBot3DefNotStart = IAMatch(bot2DefStart, bot3DefNotStart)
+        dataBot3DefStart, dataBot2DefNotStart = IAMatch(bot3DefStart, bot2DefNotStart)
 
+        bot1AgroStats.add_stats(dataBot2AgroNotStart,"bot2Agro")
+        bot2AgroStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
+
+        bot1AgroStats.add_stats(dataBot3AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
+
+        bot2AgroStats.add_stats(dataBot2AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_stats(dataBot2AgroNotStart,"bot2Agro")
+
+        bot1DefStats.add_stats(dataBot2DefNotStart,"bot2Def")
+        bot2DefStats.add_stats(dataBot1DefNotStart,"bot1Def")
+
+        bot1DefStats.add_stats(dataBot3DefNotStart,"bot3Def")
+        bot3DefStats.add_stats(dataBot1DefNotStart,"bot1Def")
+
+        bot2DefStats.add_stats(dataBot2DefNotStart,"bot3Def")
+        bot3DefStats.add_stats(dataBot2DefNotStart,"bot2Def")
 
         dataBot1AgroStart, dataBot1DefNotStart = IAMatch(bot1AgroStart,bot1DefNotStart)
         dataBot1DefStart, dataBot1AgroNotStart = IAMatch(bot1DefStart,bot1AgroNotStart)
@@ -148,56 +228,47 @@ def analyseData():
         dataBot3DefStart, dataBot3AgroNotStart = IAMatch(bot3DefStart,bot3AgroNotStart)
         dataBot3AgroStart, dataBot3DefNotStart = IAMatch(bot3AgroStart,bot3DefNotStart)
 
+        bot1AgroStats.add_stats(dataBot1DefNotStart,"bot1Def")
+        bot1DefStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
 
-        dataBot1AgroStart, dataBot2AgroNotStart
-        dataBot2AgroStart, dataBot1AgroNotStart
+        bot2AgroStats.add_stats(dataBot2DefNotStart,"bot2Def")
+        bot2DefStats.add_stats(dataBot2AgroNotStart,"bot2Agro")
 
-        dataBot1AgroStart, dataBot3AgroNotStart
-        dataBot3AgroStart, dataBot1AgroNotStart
+        bot3AgroStats.add_stats(dataBot3DefNotStart,"bot3Def")
+        bot3DefStats.add_stats(dataBot1AgroNotStart,"bot3Agro")
+
+        dataBot1AgroStart, dataBot2DefNotStart = IAMatch(bot1AgroStart,bot2DefNotStart)
+        dataBot2DefStart, dataBot1AgroNotStart = IAMatch(bot2DefStart,bot1AgroNotStart)
+
+        dataBot1AgroStart, dataBot3DefNotStart = IAMatch(bot1AgroStart,bot3DefNotStart)
+        dataBot3DefStart, dataBot1AgroNotStart = IAMatch(bot3DefStart,bot1AgroNotStart)
         
-        dataBot2AgroStart, dataBot3AgroNotStart
-        dataBot3AgroStart, dataBot2AgroNotStart
+        dataBot2AgroStart, dataBot3DefNotStart = IAMatch(bot2AgroStart,bot3DefNotStart)
+        dataBot3DefStart, dataBot2AgroNotStart = IAMatch(bot3DefStart,bot2AgroNotStart)
 
+        bot1AgroStats.add_stats(dataBot2DefNotStart,"bot2Def")
+        bot2DefStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
 
-        dataBot1DefStart, dataBot2DefNotStart
-        dataBot2DefStart, dataBot1DefNotStart
+        bot1AgroStats.add_stats(dataBot3DefNotStart,"bot3Def")
+        bot3DefStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
 
-        dataBot1DefStart, dataBot3DefNotStart
-        dataBot3DefStart, dataBot1DefNotStart
+        bot2AgroStats.add_stats(dataBot3DefNotStart,"bot3Def")
+        bot3DefStats.add_stats(dataBot2DefNotStart,"bot2Def")
 
-        dataBot2DefStart, dataBot3DefNotStart
-        dataBot3DefStart, dataBot2DefNotStart
+        dataBot1DefStart, dataBot2AgroNotStart = IAMatch(bot1DefStart,bot2AgroNotStart)
+        dataBot2AgroStart, dataBot1DefNotStart = IAMatch(bot2AgroStart,bot1DefNotStart)
 
+        dataBot1DefStart, dataBot3AgroNotStart = IAMatch(bot1DefStart,bot3AgroNotStart)
+        dataBot3AgroStart, dataBot1DefNotStart = IAMatch(bot3AgroStart,bot1DefNotStart)
 
-        dataBot1AgroStart, dataBot2AgroNotStart
-        dataBot2AgroStart, dataBot1AgroNotStart
+        dataBot2DefStart, dataBot3AgroNotStart = IAMatch(bot2DefStart,bot3AgroNotStart)
+        dataBot3AgroStart, dataBot2DefNotStart = IAMatch(bot3AgroStart,bot2DefNotStart)
 
-        dataBot1AgroStart, dataBot3AgroNotStart
-        dataBot3AgroStart, dataBot1AgroNotStart
-        
-        dataBot2AgroStart, dataBot3AgroNotStart
-        dataBot3AgroStart, dataBot2AgroNotStart
+        bot1DefStats.add_stats(dataBot2AgroNotStart,"bot2Agro")
+        bot2AgroStats.add_stats(dataBot1DefNotStart,"bot1Def")
 
+        bot1DefStats.add_stats(dataBot3AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_stats(dataBot1DefNotStart,"bot1Def")
 
-        dataBot1DefStart, dataBot2DefNotStart
-        dataBot2DefStart, dataBot1DefNotStart
-
-        dataBot1DefStart, dataBot3DefNotStart
-        dataBot3DefStart, dataBot1DefNotStart
-
-        dataBot2DefStart, dataBot3DefNotStart
-        dataBot3DefStart, dataBot2DefNotStart
-
-
-
-    if databot1['estGagnant']:
-        print(f"Le bot 1 a gagné, temps de réflexion moyen: {databot1['tpsReflexionMoy']:.3f} sec")
-        print(f"Le bot 2 a perdu, temps de réflexion moyen: {databot2['tpsReflexionMoy']:.3f} sec")
-
-    elif databot2['estGagnant']:
-        print(f"Le bot 2 a gagné, temps de réflexion moyen: {databot2['tpsReflexionMoy']:.3f} sec")
-        print(f"Le bot 1 a perdu, temps de réflexion moyen: {databot1['tpsReflexionMoy']:.3f} sec")
-
-    else:
-        print(f"Match nul, Temps de réflexion du bot 1 {databot1['tpsReflexionMoy']:.3f} sec")
-        print(f"           Temps de réflexion du bot 2 {databot2['tpsReflexionMoy']:.3f} sec")
+        bot2DefStats.add_stats(dataBot3AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_stats(dataBot2DefNotStart,"bot2Def")

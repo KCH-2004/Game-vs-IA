@@ -14,6 +14,8 @@ class AI:
         self.dernierCoup = None
         self.tempsReflexion = None
         
+    def setJetonAI(self,jetonAI):
+        self.jetonAI = jetonAI
 
     def getDernierCoup(self):
 
