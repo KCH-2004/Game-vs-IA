@@ -1,6 +1,7 @@
 import ia
 import game
 import csv
+import itertools
 
 class IAStats:
 
@@ -14,10 +15,10 @@ class IAStats:
         self.matchups = {}
 
     def get_winrate(self):
-        return (self.victoires / (self.nuls + self.defaites + self.nuls)) * 100
+        return (self.victoires / (self.nuls + self.defaites + self.victoires)) * 100
     
     def get_average_time(self):
-        return f"{self.tps_total/self.coups_totaux:.3f}"
+        return self.tps_total/self.coups_totaux
     
     def get_nom(self):
         return self.nomIA
@@ -32,7 +33,7 @@ class IAStats:
 
             case False:
                 self.defaites +=1
-                self.matchups[matchup]["défaites"] += 1
+                self.matchups[matchup]["defaites"] += 1
 
             case _:
                 self.nuls +=1
@@ -41,7 +42,7 @@ class IAStats:
         self.tps_total += datas["tpsReflexion"]
         self.coups_totaux += datas["nbCoups"]
     
-    def get_all_matchup(self):
+    def get_matchup(self):
         return self.matchups
 
 def IAMatch(bot1,bot2):
@@ -126,6 +127,7 @@ def IAMatch(bot1,bot2):
     return bot1Data,bot2Data
 
 def analyseData():
+    winrateStarting, winrateNotStarting, draw, games= 0, 0, 0, 0
 
     #Nommage des différents IA: bot + profondeur du minimax + Style de jeu + Si commence
     bot1AgroStart = ia.AI('O','X',1,"Agressif")
@@ -148,185 +150,136 @@ def analyseData():
 
     #Création d'objets permettant de stocker efficacement les données
     bot1AgroStats = IAStats("bot1AgroStats")
-    bot2AgroStats = IAStats("bot1AgroStats")
-    bot3AgroStats = IAStats("bot1AgroStats")
+    bot2AgroStats = IAStats("bot2AgroStats")
+    bot3AgroStats = IAStats("bot3AgroStats")
     bot1DefStats = IAStats("bot1DefStats")
     bot2DefStats = IAStats("bot2DefStats")
     bot3DefStats = IAStats("bot3DefStats")
 
+    IAs = [
+        {"nom": "bot1Agro", "start": bot1AgroStart, "not_start": bot1AgroNotStart, "stats": bot1AgroStats},
+        {"nom": "bot2Agro", "start": bot2AgroStart, "not_start": bot2AgroNotStart, "stats": bot2AgroStats},
+        {"nom": "bot3Agro", "start": bot3AgroStart, "not_start": bot3AgroNotStart, "stats": bot3AgroStats},
+        {"nom": "bot1Def", "start": bot1DefStart, "not_start": bot1DefNotStart, "stats": bot1DefStats},
+        {"nom": "bot2Def", "start": bot2DefStart, "not_start": bot2DefNotStart, "stats": bot2DefStats},
+        {"nom": "bot3Def", "start": bot3DefStart, "not_start": bot3DefNotStart, "stats": bot3DefStats}
+    ]
+
+    print("Analyse data: Bot identique")
+
     for i in range(50):
-        
-        #Nommage des données: + data + nom de l'IA
-        dataBot1AgroStart, dataBot1AgroNotStart = IAMatch(bot1AgroStart,bot1AgroNotStart)
-        dataBot2AgroStart, dataBot2AgroNotStart = IAMatch(bot2AgroStart,bot2AgroNotStart)
-        dataBot3AgroStart, dataBot3AgroNotStart = IAMatch(bot3AgroStart,bot3AgroNotStart)
 
-        dataBot1DefStart, dataBot1DefNotStart = IAMatch(bot1DefStart,bot1DefNotStart)
-        dataBot2DefStart, dataBot2DefNotStart = IAMatch(bot2DefStart,bot2DefNotStart)
-        dataBot3DefStart, dataBot3DefNotStart = IAMatch(bot3DefStart,bot3DefNotStart)
+        for bot in IAs:
+            data_start, data_not_start = IAMatch(bot["start"], bot["not_start"])
+            bot["stats"].add_matchup(data_start, bot["nom"])
+            bot["stats"].add_matchup(data_not_start, bot["nom"])
 
-        bot1AgroStats.add_matchup(dataBot1AgroStart,"bot1Agro")
-        bot2AgroStats.add_matchup(dataBot2AgroStart,"bot2Agro")
-        bot3AgroStats.add_matchup(dataBot3AgroStart,"bot3Agro")
+            if data_start["estGagnant"]:
+                winrateStarting += 1
+            elif data_not_start["estGagnant"]:
+                winrateNotStarting += 1
+            else:
+                draw += 1
+            games += 1
 
-        bot1DefStats.add_matchup(dataBot1DefStart,"bot1Def")
-        bot2DefStats.add_matchup(dataBot2DefStart,"bot2Def")
-        bot3DefStats.add_matchup(dataBot3DefStart,"bot3Def")
-    
+        print(f"tour{i}")
+    print("Analyse data: Bot qui jouent entre eux")
+
     for i in range(25):
 
-        dataBot1AgroStart, dataBot2AgroNotStart = IAMatch(bot1AgroStart, bot2AgroNotStart)
-        dataBot2AgroStart, dataBot1AgroNotStart = IAMatch(bot2AgroStart, bot1AgroNotStart)
+        for botA, botB in itertools.combinations(IAs, 2):
+            dataA_1, dataB_1 = IAMatch(botA["start"], botB["not_start"])
+            botA["stats"].add_matchup(dataA_1, botB["nom"])
+            botB["stats"].add_matchup(dataB_1, botA["nom"])
 
-        dataBot1AgroStart, dataBot3AgroNotStart = IAMatch(bot1AgroStart, bot3AgroNotStart)
-        dataBot3AgroStart, dataBot1AgroNotStart = IAMatch(bot3AgroStart, bot1AgroNotStart)
-        
-        dataBot2AgroStart, dataBot3AgroNotStart = IAMatch(bot2AgroStart, bot3AgroNotStart)
-        dataBot3AgroStart, dataBot2AgroNotStart = IAMatch(bot3AgroStart, bot2AgroNotStart)
+            if dataA_1["estGagnant"]:
+                winrateStarting += 1
 
+            elif dataB_1["estGagnant"]:
+                winrateNotStarting += 1
 
-        dataBot1DefStart, dataBot2DefNotStart = IAMatch(bot1DefStart, bot2DefNotStart)
-        dataBot2DefStart, dataBot1DefNotStart = IAMatch(bot2DefStart, bot1DefNotStart)
+            else:
+                draw += 1
 
-        dataBot1DefStart, dataBot3DefNotStart = IAMatch(bot1DefStart, bot3DefNotStart)
-        dataBot3DefStart, dataBot1DefNotStart = IAMatch(bot3DefStart, bot1DefNotStart)
+            games += 1
 
-        dataBot2DefStart, dataBot3DefNotStart = IAMatch(bot2DefStart, bot3DefNotStart)
-        dataBot3DefStart, dataBot2DefNotStart = IAMatch(bot3DefStart, bot2DefNotStart)
+            dataB_2, dataA_2 = IAMatch(botB["start"], botA["not_start"])
+            botB["stats"].add_matchup(dataB_2, botA["nom"])
+            botA["stats"].add_matchup(dataA_2, botB["nom"])
 
-        bot1AgroStats.add_matchup(dataBot2AgroNotStart,"bot2Agro")
-        bot2AgroStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
+            if dataB_2["estGagnant"]:
+                winrateStarting += 1
 
-        bot1AgroStats.add_matchup(dataBot3AgroNotStart,"bot3Agro")
-        bot3AgroStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
+            elif dataA_2["estGagnant"]:
+                winrateNotStarting += 1
 
-        bot2AgroStats.add_matchup(dataBot2AgroNotStart,"bot3Agro")
-        bot3AgroStats.add_matchup(dataBot2AgroNotStart,"bot2Agro")
+            else:
+                draw += 1
 
-        bot1DefStats.add_matchup(dataBot2DefNotStart,"bot2Def")
-        bot2DefStats.add_matchup(dataBot1DefNotStart,"bot1Def")
-
-        bot1DefStats.add_matchup(dataBot3DefNotStart,"bot3Def")
-        bot3DefStats.add_matchup(dataBot1DefNotStart,"bot1Def")
-
-        bot2DefStats.add_matchup(dataBot2DefNotStart,"bot3Def")
-        bot3DefStats.add_matchup(dataBot2DefNotStart,"bot2Def")
-
-        dataBot1AgroStart, dataBot1DefNotStart = IAMatch(bot1AgroStart,bot1DefNotStart)
-        dataBot1DefStart, dataBot1AgroNotStart = IAMatch(bot1DefStart,bot1AgroNotStart)
-
-        dataBot2AgroStart, dataBot2DefNotStart = IAMatch(bot2AgroStart,bot2DefNotStart)
-        dataBot2DefStart, dataBot2AgroNotStart = IAMatch(bot2DefStart,bot2AgroNotStart)
-
-        dataBot3DefStart, dataBot3AgroNotStart = IAMatch(bot3DefStart,bot3AgroNotStart)
-        dataBot3AgroStart, dataBot3DefNotStart = IAMatch(bot3AgroStart,bot3DefNotStart)
-
-        bot1AgroStats.add_matchup(dataBot1DefNotStart,"bot1Def")
-        bot1DefStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
-
-        bot2AgroStats.add_matchup(dataBot2DefNotStart,"bot2Def")
-        bot2DefStats.add_matchup(dataBot2AgroNotStart,"bot2Agro")
-
-        bot3AgroStats.add_matchup(dataBot3DefNotStart,"bot3Def")
-        bot3DefStats.add_matchup(dataBot1AgroNotStart,"bot3Agro")
-
-        dataBot1AgroStart, dataBot2DefNotStart = IAMatch(bot1AgroStart,bot2DefNotStart)
-        dataBot2DefStart, dataBot1AgroNotStart = IAMatch(bot2DefStart,bot1AgroNotStart)
-
-        dataBot1AgroStart, dataBot3DefNotStart = IAMatch(bot1AgroStart,bot3DefNotStart)
-        dataBot3DefStart, dataBot1AgroNotStart = IAMatch(bot3DefStart,bot1AgroNotStart)
-        
-        dataBot2AgroStart, dataBot3DefNotStart = IAMatch(bot2AgroStart,bot3DefNotStart)
-        dataBot3DefStart, dataBot2AgroNotStart = IAMatch(bot3DefStart,bot2AgroNotStart)
-
-        bot1AgroStats.add_matchup(dataBot2DefNotStart,"bot2Def")
-        bot2DefStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
-
-        bot1AgroStats.add_matchup(dataBot3DefNotStart,"bot3Def")
-        bot3DefStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
-
-        bot2AgroStats.add_matchup(dataBot3DefNotStart,"bot3Def")
-        bot3DefStats.add_matchup(dataBot2DefNotStart,"bot2Def")
-
-        dataBot1DefStart, dataBot2AgroNotStart = IAMatch(bot1DefStart,bot2AgroNotStart)
-        dataBot2AgroStart, dataBot1DefNotStart = IAMatch(bot2AgroStart,bot1DefNotStart)
-
-        dataBot1DefStart, dataBot3AgroNotStart = IAMatch(bot1DefStart,bot3AgroNotStart)
-        dataBot3AgroStart, dataBot1DefNotStart = IAMatch(bot3AgroStart,bot1DefNotStart)
-
-        dataBot2DefStart, dataBot3AgroNotStart = IAMatch(bot2DefStart,bot3AgroNotStart)
-        dataBot3AgroStart, dataBot2DefNotStart = IAMatch(bot3AgroStart,bot2DefNotStart)
-
-        bot1DefStats.add_matchup(dataBot2AgroNotStart,"bot2Agro")
-        bot2AgroStats.add_matchup(dataBot1DefNotStart,"bot1Def")
-
-        bot1DefStats.add_matchup(dataBot3AgroNotStart,"bot3Agro")
-        bot3AgroStats.add_matchup(dataBot1DefNotStart,"bot1Def")
-
-        bot2DefStats.add_matchup(dataBot3AgroNotStart,"bot3Agro")
-        bot3AgroStats.add_matchup(dataBot2DefNotStart,"bot2Def")
-
+            games += 1
+        print(f"tour{i}")
+    print("écriture du fichier CSV")
     with open('stats.csv','w',newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(['Nom du bot', '% victoire total', 'Temps de réflexion moyen', '% victoire matchups'])
 
         matchups_b1A = bot1AgroStats.get_matchups()
         texte_matchups_b1A = " | ".join([
-                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        f"{adversaire}: {stats['victoires']}V-{stats['defaites']}D-N{stats['nuls']}" 
                                         for adversaire, stats in matchups_b1A.items()
                                         ])
         
         writer.writerow([bot1AgroStats.get_nom(), 
                             f"{bot1AgroStats.get_winrate()} %", 
-                            f"{bot1AgroStats.get_average_time()} sec",
+                            f"{bot1AgroStats.get_average_time():.3f} sec",
                             texte_matchups_b1A])
         
         matchups_b2A = bot2AgroStats.get_matchups()
         texte_matchups_b2A = " | ".join([
-                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        f"{adversaire}: {stats['victoires']}V-{stats['defaites']}D-N{stats['nuls']}" 
                                         for adversaire, stats in matchups_b2A.items()
                                         ])
         writer.writerow([bot2AgroStats.get_nom(),
                             f"{bot2AgroStats.get_winrate()} %",
-                            f"{bot2AgroStats.get_average_time()} sec",
+                            f"{bot2AgroStats.get_average_time():.3f} sec",
                             texte_matchups_b2A])
         
         matchups_b3A = bot3AgroStats.get_matchups()
         texte_matchups_b3A = " | ".join([
-                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        f"{adversaire}: {stats['victoires']}V-{stats['defaites']}D-N{stats['nuls']}" 
                                         for adversaire, stats in matchups_b3A.items()
                                         ])
         writer.writerow([bot3AgroStats.get_nom(), 
                             f"{bot3AgroStats.get_winrate()} %",
-                            f"{bot3AgroStats.get_average_time()} sec",
+                            f"{bot3AgroStats.get_average_time():.3f} sec",
                             texte_matchups_b3A])
         
         matchups_b1D = bot1DefStats.get_matchups()
         texte_matchups_b1D = " | ".join([
-                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        f"{adversaire}: {stats['victoires']}V-{stats['defaites']}D-N{stats['nuls']}" 
                                         for adversaire, stats in matchups_b1D.items()
                                         ])
         writer.writerow([bot1DefStats.get_nom(),
                         f"{bot1DefStats.get_winrate()} %",
-                        f"{bot1DefStats.get_average_time()} sec",
+                        f"{bot1DefStats.get_average_time():.3f} sec",
                         texte_matchups_b1D])
         
         matchups_b2D = bot2DefStats.get_matchups()
         texte_matchups_b2D = " | ".join([
-                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        f"{adversaire}: {stats['victoires']}V-{stats['defaites']}D-N{stats['nuls']}" 
                                         for adversaire, stats in matchups_b2D.items()
                                         ])
         writer.writerow([bot2DefStats.get_nom(),
                         f"{bot2DefStats.get_winrate()} %",
-                        f"{bot2DefStats.get_average_time()} sec",
+                        f"{bot2DefStats.get_average_time():.3f} sec",
                         texte_matchups_b2D])
 
         matchups_b3D = bot3DefStats.get_matchups()
         texte_matchups_b3D = " | ".join([
-                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        f"{adversaire}: {stats['victoires']}V-{stats['defaites']}D-N{stats['nuls']}" 
                                         for adversaire, stats in matchups_b3D.items()
                                         ])
         writer.writerow([bot3DefStats.get_nom(),
                         f"{bot3DefStats.get_winrate()} %",
-                        f"{bot3DefStats.get_average_time()} sec",
+                        f"{bot3DefStats.get_average_time():.3f} sec",
                         texte_matchups_b3D])
