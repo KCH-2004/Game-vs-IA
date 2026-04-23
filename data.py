@@ -14,16 +14,16 @@ class IAStats:
         self.matchups = {}
 
     def get_winrate(self):
-        return self.victoires / (self.nuls + self.defaites)
+        return (self.victoires / (self.nuls + self.defaites + self.nuls)) * 100
     
     def get_average_time(self):
-        return self.tps_total/self.coups_totaux
+        return f"{self.tps_total/self.coups_totaux:.3f}"
     
     def get_nom(self):
         return self.nomIA
     
-    def add_stats(self, datas, matchup):
-        self.matchups.setdefault(matchup, {"victoire": 0, "defaite": 0, "nul": 0})
+    def add_matchup(self, datas, matchup):
+        self.matchups.setdefault(matchup, {"victoires": 0, "defaites": 0, "nuls": 0})
         match datas["estGagnant"]:
 
             case True:
@@ -40,6 +40,9 @@ class IAStats:
         
         self.tps_total += datas["tpsReflexion"]
         self.coups_totaux += datas["nbCoups"]
+    
+    def get_all_matchup(self):
+        return self.matchups
 
 def IAMatch(bot1,bot2):
 
@@ -151,16 +154,6 @@ def analyseData():
     bot2DefStats = IAStats("bot2DefStats")
     bot3DefStats = IAStats("bot3DefStats")
 
-    with open('data.csv','w',newline='') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow('Bot')
-        spamwriter.writerow('Bot1Agressif')
-        spamwriter.writerow('Bot2Agressif')
-        spamwriter.writerow('Bot3Agressif')
-        spamwriter.writerow('Bot4Agressif')
-        spamwriter.writerow('Bot5Agressif')
-        spamwriter.writerow('Bot6Agressif')
-
     for i in range(50):
         
         #Nommage des données: + data + nom de l'IA
@@ -172,13 +165,13 @@ def analyseData():
         dataBot2DefStart, dataBot2DefNotStart = IAMatch(bot2DefStart,bot2DefNotStart)
         dataBot3DefStart, dataBot3DefNotStart = IAMatch(bot3DefStart,bot3DefNotStart)
 
-        bot1AgroStats.add_stats(dataBot1AgroStart,"bot1Agro")
-        bot2AgroStats.add_stats(dataBot2AgroStart,"bot2Agro")
-        bot3AgroStats.add_stats(dataBot3AgroStart,"bot3Agro")
+        bot1AgroStats.add_matchup(dataBot1AgroStart,"bot1Agro")
+        bot2AgroStats.add_matchup(dataBot2AgroStart,"bot2Agro")
+        bot3AgroStats.add_matchup(dataBot3AgroStart,"bot3Agro")
 
-        bot1DefStats.add_stats(dataBot1DefStart,"bot1Def")
-        bot2DefStats.add_stats(dataBot2DefStart,"bot2Def")
-        bot3DefStats.add_stats(dataBot3DefStart,"bot3Def")
+        bot1DefStats.add_matchup(dataBot1DefStart,"bot1Def")
+        bot2DefStats.add_matchup(dataBot2DefStart,"bot2Def")
+        bot3DefStats.add_matchup(dataBot3DefStart,"bot3Def")
     
     for i in range(25):
 
@@ -201,23 +194,23 @@ def analyseData():
         dataBot2DefStart, dataBot3DefNotStart = IAMatch(bot2DefStart, bot3DefNotStart)
         dataBot3DefStart, dataBot2DefNotStart = IAMatch(bot3DefStart, bot2DefNotStart)
 
-        bot1AgroStats.add_stats(dataBot2AgroNotStart,"bot2Agro")
-        bot2AgroStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
+        bot1AgroStats.add_matchup(dataBot2AgroNotStart,"bot2Agro")
+        bot2AgroStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
 
-        bot1AgroStats.add_stats(dataBot3AgroNotStart,"bot3Agro")
-        bot3AgroStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
+        bot1AgroStats.add_matchup(dataBot3AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
 
-        bot2AgroStats.add_stats(dataBot2AgroNotStart,"bot3Agro")
-        bot3AgroStats.add_stats(dataBot2AgroNotStart,"bot2Agro")
+        bot2AgroStats.add_matchup(dataBot2AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_matchup(dataBot2AgroNotStart,"bot2Agro")
 
-        bot1DefStats.add_stats(dataBot2DefNotStart,"bot2Def")
-        bot2DefStats.add_stats(dataBot1DefNotStart,"bot1Def")
+        bot1DefStats.add_matchup(dataBot2DefNotStart,"bot2Def")
+        bot2DefStats.add_matchup(dataBot1DefNotStart,"bot1Def")
 
-        bot1DefStats.add_stats(dataBot3DefNotStart,"bot3Def")
-        bot3DefStats.add_stats(dataBot1DefNotStart,"bot1Def")
+        bot1DefStats.add_matchup(dataBot3DefNotStart,"bot3Def")
+        bot3DefStats.add_matchup(dataBot1DefNotStart,"bot1Def")
 
-        bot2DefStats.add_stats(dataBot2DefNotStart,"bot3Def")
-        bot3DefStats.add_stats(dataBot2DefNotStart,"bot2Def")
+        bot2DefStats.add_matchup(dataBot2DefNotStart,"bot3Def")
+        bot3DefStats.add_matchup(dataBot2DefNotStart,"bot2Def")
 
         dataBot1AgroStart, dataBot1DefNotStart = IAMatch(bot1AgroStart,bot1DefNotStart)
         dataBot1DefStart, dataBot1AgroNotStart = IAMatch(bot1DefStart,bot1AgroNotStart)
@@ -228,14 +221,14 @@ def analyseData():
         dataBot3DefStart, dataBot3AgroNotStart = IAMatch(bot3DefStart,bot3AgroNotStart)
         dataBot3AgroStart, dataBot3DefNotStart = IAMatch(bot3AgroStart,bot3DefNotStart)
 
-        bot1AgroStats.add_stats(dataBot1DefNotStart,"bot1Def")
-        bot1DefStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
+        bot1AgroStats.add_matchup(dataBot1DefNotStart,"bot1Def")
+        bot1DefStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
 
-        bot2AgroStats.add_stats(dataBot2DefNotStart,"bot2Def")
-        bot2DefStats.add_stats(dataBot2AgroNotStart,"bot2Agro")
+        bot2AgroStats.add_matchup(dataBot2DefNotStart,"bot2Def")
+        bot2DefStats.add_matchup(dataBot2AgroNotStart,"bot2Agro")
 
-        bot3AgroStats.add_stats(dataBot3DefNotStart,"bot3Def")
-        bot3DefStats.add_stats(dataBot1AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_matchup(dataBot3DefNotStart,"bot3Def")
+        bot3DefStats.add_matchup(dataBot1AgroNotStart,"bot3Agro")
 
         dataBot1AgroStart, dataBot2DefNotStart = IAMatch(bot1AgroStart,bot2DefNotStart)
         dataBot2DefStart, dataBot1AgroNotStart = IAMatch(bot2DefStart,bot1AgroNotStart)
@@ -246,14 +239,14 @@ def analyseData():
         dataBot2AgroStart, dataBot3DefNotStart = IAMatch(bot2AgroStart,bot3DefNotStart)
         dataBot3DefStart, dataBot2AgroNotStart = IAMatch(bot3DefStart,bot2AgroNotStart)
 
-        bot1AgroStats.add_stats(dataBot2DefNotStart,"bot2Def")
-        bot2DefStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
+        bot1AgroStats.add_matchup(dataBot2DefNotStart,"bot2Def")
+        bot2DefStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
 
-        bot1AgroStats.add_stats(dataBot3DefNotStart,"bot3Def")
-        bot3DefStats.add_stats(dataBot1AgroNotStart,"bot1Agro")
+        bot1AgroStats.add_matchup(dataBot3DefNotStart,"bot3Def")
+        bot3DefStats.add_matchup(dataBot1AgroNotStart,"bot1Agro")
 
-        bot2AgroStats.add_stats(dataBot3DefNotStart,"bot3Def")
-        bot3DefStats.add_stats(dataBot2DefNotStart,"bot2Def")
+        bot2AgroStats.add_matchup(dataBot3DefNotStart,"bot3Def")
+        bot3DefStats.add_matchup(dataBot2DefNotStart,"bot2Def")
 
         dataBot1DefStart, dataBot2AgroNotStart = IAMatch(bot1DefStart,bot2AgroNotStart)
         dataBot2AgroStart, dataBot1DefNotStart = IAMatch(bot2AgroStart,bot1DefNotStart)
@@ -264,11 +257,76 @@ def analyseData():
         dataBot2DefStart, dataBot3AgroNotStart = IAMatch(bot2DefStart,bot3AgroNotStart)
         dataBot3AgroStart, dataBot2DefNotStart = IAMatch(bot3AgroStart,bot2DefNotStart)
 
-        bot1DefStats.add_stats(dataBot2AgroNotStart,"bot2Agro")
-        bot2AgroStats.add_stats(dataBot1DefNotStart,"bot1Def")
+        bot1DefStats.add_matchup(dataBot2AgroNotStart,"bot2Agro")
+        bot2AgroStats.add_matchup(dataBot1DefNotStart,"bot1Def")
 
-        bot1DefStats.add_stats(dataBot3AgroNotStart,"bot3Agro")
-        bot3AgroStats.add_stats(dataBot1DefNotStart,"bot1Def")
+        bot1DefStats.add_matchup(dataBot3AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_matchup(dataBot1DefNotStart,"bot1Def")
 
-        bot2DefStats.add_stats(dataBot3AgroNotStart,"bot3Agro")
-        bot3AgroStats.add_stats(dataBot2DefNotStart,"bot2Def")
+        bot2DefStats.add_matchup(dataBot3AgroNotStart,"bot3Agro")
+        bot3AgroStats.add_matchup(dataBot2DefNotStart,"bot2Def")
+
+    with open('stats.csv','w',newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['Nom du bot', '% victoire total', 'Temps de réflexion moyen', '% victoire matchups'])
+
+        matchups_b1A = bot1AgroStats.get_matchups()
+        texte_matchups_b1A = " | ".join([
+                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        for adversaire, stats in matchups_b1A.items()
+                                        ])
+        
+        writer.writerow([bot1AgroStats.get_nom(), 
+                            f"{bot1AgroStats.get_winrate()} %", 
+                            f"{bot1AgroStats.get_average_time()} sec",
+                            texte_matchups_b1A])
+        
+        matchups_b2A = bot2AgroStats.get_matchups()
+        texte_matchups_b2A = " | ".join([
+                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        for adversaire, stats in matchups_b2A.items()
+                                        ])
+        writer.writerow([bot2AgroStats.get_nom(),
+                            f"{bot2AgroStats.get_winrate()} %",
+                            f"{bot2AgroStats.get_average_time()} sec",
+                            texte_matchups_b2A])
+        
+        matchups_b3A = bot3AgroStats.get_matchups()
+        texte_matchups_b3A = " | ".join([
+                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        for adversaire, stats in matchups_b3A.items()
+                                        ])
+        writer.writerow([bot3AgroStats.get_nom(), 
+                            f"{bot3AgroStats.get_winrate()} %",
+                            f"{bot3AgroStats.get_average_time()} sec",
+                            texte_matchups_b3A])
+        
+        matchups_b1D = bot1DefStats.get_matchups()
+        texte_matchups_b1D = " | ".join([
+                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        for adversaire, stats in matchups_b1D.items()
+                                        ])
+        writer.writerow([bot1DefStats.get_nom(),
+                        f"{bot1DefStats.get_winrate()} %",
+                        f"{bot1DefStats.get_average_time()} sec",
+                        texte_matchups_b1D])
+        
+        matchups_b2D = bot2DefStats.get_matchups()
+        texte_matchups_b2D = " | ".join([
+                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        for adversaire, stats in matchups_b2D.items()
+                                        ])
+        writer.writerow([bot2DefStats.get_nom(),
+                        f"{bot2DefStats.get_winrate()} %",
+                        f"{bot2DefStats.get_average_time()} sec",
+                        texte_matchups_b2D])
+
+        matchups_b3D = bot3DefStats.get_matchups()
+        texte_matchups_b3D = " | ".join([
+                                        f"{adversaire}: {stats['victoire']}V-{stats['defaite']}D-N{stats['nuls']}" 
+                                        for adversaire, stats in matchups_b3D.items()
+                                        ])
+        writer.writerow([bot3DefStats.get_nom(),
+                        f"{bot3DefStats.get_winrate()} %",
+                        f"{bot3DefStats.get_average_time()} sec",
+                        texte_matchups_b3D])
