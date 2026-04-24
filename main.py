@@ -1,14 +1,14 @@
-from game import Puissance5
+from game import Gomoku
 import ia
 import data
 
 if __name__ =="__main__":
-    jeu = Puissance5()
+    jeu = Gomoku()
 
     while True:
 
         try:
-            rep = input("jouer contre un humain, une ia, ou générer des données ia vs ia ? (répondre humain, ia ou data)")
+            rep = input("jouer contre un humain ou une ia ? (répondre humain, ia)")
 
             match rep.lower():
 
@@ -20,13 +20,13 @@ if __name__ =="__main__":
                     jeu.nouvellepartieMultilpayer()
                     break
 
-                case "data":
+                case "Generatedata":
                     data.analyseData()
                     break
 
                 case _:
 
-                    raise ValueError("Choisissze un mode existant (humain, ia, data)")
+                    raise ValueError("Choisissez un mode existant (humain, ia)")
                 
         except ValueError as error:
             print(f"Erreur: {error}")

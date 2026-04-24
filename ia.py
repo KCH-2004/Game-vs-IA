@@ -1,8 +1,8 @@
 import copy
 import time
-#afin de faire varier le comportement de l'IA parmi les meilleurs coups possible, 
-#on introduit de l'aléatoire dans le choix
 import random
+#afin de faire varier le comportement de l'IA parmi les meilleurs coups possible, 
+#on introduit de l'aléatoire dans la sélection du meilleur coup possible
 class AI:
 
     def __init__(self,jetonAI,jetonJoueur,depth,playstyle):
@@ -18,11 +18,9 @@ class AI:
         self.jetonAI = jetonAI
 
     def getDernierCoup(self):
-
         return self.dernierCoup
     
     def getTempsReflexion(self):
-
         return self.tempsReflexion
 
     def evaluate (self,board):

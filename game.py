@@ -1,14 +1,14 @@
 import os
 import ia
 
-class Puissance5:
+class Gomoku:
 
-    def __init__(self,nl = 10, nc = 10, jeton=('O','X')):
+    def __init__(self, jeton=('O','X')):
         """ Constructeur, crée la grille et lance une nouvelle partie"""
-        self.nl = nl
-        self.nc = nc
+        self.nl = 10
+        self.nc = 10
         self.jeton = jeton
-        self.board = [[' ' for i in range(nc)] for j in range(nl)]
+        self.board = [[' ' for i in range(self.nc)] for j in range(self.nl)]
         self.conversion_lettres_entier = {}
 
     def __str__(self):
@@ -36,7 +36,7 @@ class Puissance5:
         print("                                                                ")
 
 
-    def check_victoire(self, ligne, colonne, Jeton):
+    def check_win(self, ligne, colonne, Jeton):
         """ vérifie si le dernier coup joué, qui a placé le jeton
         de joueur en (ligne,colonne) permet de gagner.
         """
@@ -159,31 +159,31 @@ class Puissance5:
         for i in range(1,11):
             self.conversion_lettres_entier[chr(65 + i-1)] = i
 
-        compteur = 0
-        victoire = False
-        gagnant = None
+        count = 0
+        win = False
+        winner = None
         jetonAI,jetonJoueur,depth,playstyle = self.init_paramIA()
         botJeu = ia.AI(jetonAI,jetonJoueur,depth,playstyle)
 
-        while not victoire and compteur < 100:
-            compteur += 1
+        while not win and count < 100:
+            count += 1
 
             if jetonAI == 'O':
-                isAIturn = compteur % 2 == 0
+                isAIturn = count % 2 == 0
 
             else:
-                isAIturn = compteur % 2 == 1
+                isAIturn = count % 2 == 1
 
             if isAIturn:
                 print(f"C'est au tour de l'IA {jetonAI} de jouer...")
                 result = botJeu.get_best_move(self)
                 self.board[result[1][0]][result[1][1]] = jetonAI
 
-                if compteur > 6:  # on vérifie à partir du 7eme coup
-                    victoire = self.check_victoire(result[1][0], result[1][1], jetonAI)
+                if count > 6:  # on vérifie à partir du 7eme coup
+                    win = self.check_win(result[1][0], result[1][1], jetonAI)
 
-                    if victoire:
-                        gagnant = jetonAI
+                    if win:
+                        winner = jetonAI
             else:
 
                 while True:
@@ -241,19 +241,19 @@ class Puissance5:
                 os.system('cls' if os.name == 'nt' else 'clear')
                 self.show_board()
 
-                if compteur > 6:  # on vérifie à partir du 7eme coup
-                    victoire = self.check_victoire(ligne, colonne, jetonJoueur)
+                if count > 6:  # on vérifie à partir du 7eme coup
+                    win = self.check_win(ligne, colonne, jetonJoueur)
 
-                    if victoire:
-                        gagnant = jetonJoueur
+                    if win:
+                        winner = jetonJoueur
 
         os.system('cls' if os.name == 'nt' else 'clear')
         self.show_board()
 
-        if gagnant == jetonJoueur:
+        if winner == jetonJoueur:
             print("Vous avez gagné!")
 
-        elif gagnant == jetonAI:
+        elif winner == jetonAI:
             print("Dommage, ce n'est pas encore ça !")
 
         else:
@@ -292,9 +292,9 @@ class Puissance5:
             return res
 
     def nouvellepartieMultilpayer(self, jeton=('O', 'X')):
-        """
-        Fonction principale qui lance la partie.
-        Par défaut, on utilise nl = 10 lignes et nc = 10 colonnes
+        """ self x jeton -> none
+        Fonction principale qui lance la partie de Gomoku.
+        Par défaut, on utilise un plateau de 10x10
         """
         os.system('cls' if os.name == 'nt' else 'clear')
         # affichage de la grille initiale
@@ -303,20 +303,20 @@ class Puissance5:
         for i in range(1, 11):
             self.conversion_lettres_entier[chr(65 + i - 1)] = i
 
-        victoire = False
-        compteur = 0
+        win = False
+        count = 0
 
-        while not victoire and compteur < self.nc*self.nl:
-            compteur += 1
+        while not win and count < self.nc*self.nl:
+            count += 1
             # Attention, pour l'affichage, on part de joueur 1 et 2, mais pour
             # l'accès aux jetons, c'est jeton[0] et jeton[1]
-            joueur = (compteur + 1) % 2 + 1
+            joueur = (count + 1) % 2 + 1
 
             while True:
                 print(
                     f"Joueur {joueur} ({self.jeton[joueur - 1]}), Entre les coordonnées de l'endroit où tu vas jouer (A1, B2...)")
                 
-                if compteur > 1: print(f"dernier coup joué par le joueur {self.jeton[joueur - 1]}: {coord}")
+                if count > 1: print(f"dernier coup joué par le joueur {self.jeton[joueur - 1]}: {coord}")
                 coord = input('Cordonnées jouée: ')
 
                 try:
@@ -350,10 +350,10 @@ class Puissance5:
             os.system('cls' if os.name == 'nt' else 'clear')
             self.show_board()
 
-            if compteur > 6:  # on vérifie à partir du 7eme coup
-                victoire = self.check_victoire(ligne, colonne, self.jeton[joueur - 1])
+            if count > 6:  # on vérifie si un joueur a gagné partir du 7eme coup
+                win = self.check_win(ligne, colonne, self.jeton[joueur - 1])
 
-        if victoire:
+        if win:
             print(f"Le Joueur ayant le jeton ({self.jeton[joueur - 1]}) a gagné!")
             
         else:
