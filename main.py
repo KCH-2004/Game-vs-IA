@@ -6,7 +6,9 @@ if __name__ =="__main__":
 
     while True:
         try:
-            rep = input("jouer contre un humain ou une ia ? (répondre humain, ia)")
+            rep = input("jouer contre un humain ou une ia ? (répondre humain, ia)\n"
+                        "data pour générer automatiquement les données du tournoi entre IA\n"
+                        "(ATTENTION: TOUTES LES RESSOURCES DU PROCESSEUR SERONT UTILISÉES)")
 
             match rep.lower():
                 case "ia":
@@ -17,6 +19,9 @@ if __name__ =="__main__":
                     jeu.nouvellepartieMultilpayer()
                     break
 
+                case "data":
+                    data.analyseData()
+                    break
                 case _:
                     raise ValueError("Choisissez un mode existant (humain, ia)")
                 
