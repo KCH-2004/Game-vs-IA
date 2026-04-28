@@ -4,9 +4,9 @@ import ia
 class Gomoku:
 
     def __init__(self, jeton=('O','X')):
-        """ Constructeur, crée la grille et lance une nouvelle partie"""
-        self.nl = 10
-        self.nc = 10
+        """ Constructeur: crée la grille de 15 par 15"""
+        self.nl = 15
+        self.nc = 15
         self.jeton = jeton
         self.board = [[' ' for i in range(self.nc)] for j in range(self.nl)]
         self.conversion_lettres_entier = {}
@@ -20,19 +20,22 @@ class Gomoku:
         return board_str
 
     def show_board(self):
+        """self -> None
+        Affiche le plateau de 15x15
+        """
         print()
-        print("━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓")
+        print("━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓")
 
         for i in range(1,self.nl+1):
             ligne_valeurs = "  ┃  ".join(self.board[i-1])
 
-            if i == 10:
+            if i >= 10:
                 print(f" {i}┃  {ligne_valeurs}  ┃")
 
             else:
                 print(f" {i} ┃  {ligne_valeurs}  ┃")
-            print("━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫")
-        print("   ┃  A  ┃  B  ┃  C  ┃  D  ┃  E  ┃  F  ┃  G  ┃  H  ┃  I  ┃  J  ┃")
+            print("━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫━━━━━┫━━━━━┫━━━━━┫━━━━━┫━━━━━┫")
+        print("   ┃  A  ┃  B  ┃  C  ┃  D  ┃  E  ┃  F  ┃  G  ┃  H  ┃  I  ┃  J  ┃  K  ┃  L  ┃  M  ┃  N  ┃  O  ┃")
         print("                                                                ")
 
 
@@ -81,82 +84,91 @@ class Gomoku:
         return False
 
     def init_paramIA(self):
-            
-            while True:
+        """self -> string, string, int, int, string
+            Initialise les paramètres de l'IA:
+            - sélection de la difficulté
+            - style de jeu à aborder
+            - Si le joueur veut commencer ou non
+        """
 
-                try:
-                    isStarting = input("Voulez vous commencer ? (répondre par oui ou non)\n").lower()
+        while True:
 
-                    match isStarting:
+            try:
+                difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n").lower()
 
-                        case "oui":
-                            jetonAI,jetonJoueur = 'X', 'O'
-                            break
+                match difficulte:
 
-                        case "non":
-                            jetonAI,jetonJoueur = 'O', 'X'
-                            break
-
-                        case _:
-                            raise ValueError("La réponse doit être oui ou non")
-                        
-                except ValueError as erreur:
-                    print(f"Erreur : {erreur}\n")
-
-            while True:
-
-                try:
-                    difficulte = input("Quel difficulte choisir ? (Facile, Intermediaire, Difficile)\n").lower()
-
-                    match difficulte:
-
-                        case "facile":
-                            depth = 1
-                            break
-
-                        case "intermediaire":
-                            depth = 2
-                            break
-
-                        case "intermédiaire":
-                            depth = 2
-                            break
-
-                        case "difficile":
-                            depth = 3
-                            break
-
-                        case _:
-                            raise ValueError("choisir la difficulté parmi celles proposées.")
-                        
-                except ValueError as erreur:
-                        print(f"Erreur : {erreur}\n")
-
-            while True:
-
-                try:
-                    playstyle = input("Quel style de jeu l'IA doit elle adopter ? (Agressif, Defensif)").lower()
-
-                    if playstyle != "agressif" and playstyle != "defensif":
-                        raise ValueError("Choisir le style de jeu parmi celles proposées")
-                    
-                    else:
+                    case "facile":
+                        depth = 1
                         break
 
-                except ValueError as erreur:
+                    case "intermediaire":
+                        depth = 3
+                        break
+
+                    case "intermédiaire":
+                        depth = 3
+                        break
+
+                    case "difficile":
+                        depth = 5
+                        break
+
+                    case _:
+                        raise ValueError("choisir la difficulté parmi celles proposées.")
+                        
+            except ValueError as erreur:
                     print(f"Erreur : {erreur}\n")
 
-            return jetonAI,jetonJoueur,depth,playstyle
+        while True:
+
+            try:
+                playstyle = input("Quel style de jeu l'IA doit elle adopter ? (Agressif, Defensif, Neutre)").lower()
+
+                if playstyle != "agressif" and playstyle != "defensif" and playstyle != "neutre":
+                    raise ValueError("Choisir le style de jeu parmi celles proposées (Agressif, Defensif, Neutre)")
+                    
+                else:
+                    break
+
+            except ValueError as erreur:
+                print(f"Erreur : {erreur}\n")
+
+        if playstyle == "defensif":
+            if depth != 1:
+                depth -= 1
+
+        while True:
+
+            try:
+                isStarting = input("Voulez vous commencer ? (répondre par oui ou non)\n").lower()
+
+                match isStarting:
+
+                    case "oui":
+                        jetonAI,jetonJoueur = 'X', 'O'
+                        break
+
+                    case "non":
+                        jetonAI,jetonJoueur = 'O', 'X'
+                        break
+
+                    case _:
+                        raise ValueError("La réponse doit être oui ou non")
+
+            except ValueError as erreur:
+                print(f"Erreur : {erreur}\n")
+
+        return jetonAI,jetonJoueur,depth,playstyle
 
     def nouvellepartievsIA(self):
-        """
-        Fonction principale qui lance la partie.
+        """self -> None
+        Fonction principale qui lance la partie contre l'IA.
         Par défaut, on utilise nl = 10 lignes et nc = 10 colonnes
         """
         os.system('cls' if os.name == 'nt' else 'clear')
-        # affichage de la grille initiale
 
-        for i in range(1,11):
+        for i in range(1,15):
             self.conversion_lettres_entier[chr(65 + i-1)] = i
 
         count = 0
@@ -168,7 +180,7 @@ class Gomoku:
         while not win and count < 100:
             count += 1
 
-            if jetonAI == 'O':
+            if jetonAI == 'X':
                 isAIturn = count % 2 == 0
 
             else:
@@ -198,10 +210,10 @@ class Gomoku:
 
                         match depth:
 
-                            case 2:
+                            case 1:
                                 print(f"C'est parti contre l'IA en mode: facile")
 
-                            case 3:
+                            case 2:
                                 print(f"C'est parti contre l'IA en mode: intermédiaire")
 
                             case 4:
@@ -217,14 +229,14 @@ class Gomoku:
                         lettre = coord[0].upper()
                         partie_nombre = coord[1:]
 
-                        if not ('A' <= lettre <= 'J'):
-                            raise ValueError("La lettre doit être comprise entre A et J.")
+                        if not ('A' <= lettre <= 'O'):
+                            raise ValueError("La lettre doit être comprise entre A et O.")
                         
                         lettre = int(self.conversion_lettres_entier[(coord[0].upper())])
                         nombre = int(partie_nombre)
                         
-                        if not (1 <= nombre <= 10):
-                            raise ValueError("Le nombre doit être compris entre 1 et 10.")
+                        if not (1 <= nombre <= 15):
+                            raise ValueError("Le nombre doit être compris entre 1 et 15.")
                         
                         if not(self.board[nombre-1][lettre-1] == ' '):
                             raise ValueError("Cette case a déjà été jouée.")
@@ -260,41 +272,38 @@ class Gomoku:
             print("Match nul!")
 
     def get_remain_moves(self):
+        """self -> list
+        Fonction qui retourne les coups autour des jetons existants.
+        """
         res = []
+        pieces = []
 
-        for i in range(10):
+        # On trouve d'abord les jetons posés
+        for i in range(15):
+            for j in range(15):
+                if self.board[i][j] != ' ':
+                    pieces.append((i, j))
 
-            for j in range(10):
+        # Si le plateau est vide, alors on place le permier jeton au centre
+        if not pieces:
+            return [[7, 7]]
 
-                if self.board[i][j] == ' ':
-                    voisin_trouve = False
+        # On ne génère des coups qu'autour des pièces existantes
+        seen = set()
+        for r, c in pieces:
+            for dr in range(-2, 3):
+                for dc in range(-2, 3):
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < 15 and 0 <= nc < 15 and self.board[nr][nc] == ' ':
+                        if (nr, nc) not in seen:
+                            seen.add((nr, nc))
+                            res.append([nr, nc])
 
-                    for decalage_ligne in range (-1,2):
-                        voisin_ligne = i + decalage_ligne
-
-                        for decalage_colonne in range (-1,2):
-                            voisin_colonne = j + decalage_colonne
-
-                            if 0 <= voisin_ligne < 10 and 0 <= voisin_colonne < 10:
-
-                                if self.board[voisin_ligne][voisin_colonne] != ' ':
-                                    voisin_trouve = True
-                                    break
-
-                        if voisin_trouve:
-                            res.append([i, j])
-                            break
-
-        if len(res) == 0:
-            return [[4, 4]]
-        
-        else:
-            return res
+        return res
 
     def nouvellepartieMultilpayer(self, jeton=('O', 'X')):
         """ self x jeton -> none
-        Fonction principale qui lance la partie de Gomoku.
-        Par défaut, on utilise un plateau de 10x10
+        Fonction principale qui lance la partie de Gomoku en multijoueur
         """
         os.system('cls' if os.name == 'nt' else 'clear')
         # affichage de la grille initiale
@@ -308,8 +317,6 @@ class Gomoku:
 
         while not win and count < self.nc*self.nl:
             count += 1
-            # Attention, pour l'affichage, on part de joueur 1 et 2, mais pour
-            # l'accès aux jetons, c'est jeton[0] et jeton[1]
             joueur = (count + 1) % 2 + 1
 
             while True:
@@ -327,14 +334,14 @@ class Gomoku:
                     lettre = coord[0].upper()
                     partie_nombre = coord[1:]
 
-                    if not ('A' <= lettre <= 'J'):
-                        raise ValueError("La lettre doit être comprise entre A et J.")
+                    if not ('A' <= lettre <= 'O'):
+                        raise ValueError("La lettre doit être comprise entre A et O.")
                     
                     lettre = int(self.conversion_lettres_entier[(coord[0].upper())])
                     nombre = int(partie_nombre)
                     
-                    if not (1 <= nombre <= 10):
-                        raise ValueError("Le nombre doit être compris entre 1 et 10.")
+                    if not (1 <= nombre <= 15):
+                        raise ValueError("Le nombre doit être compris entre 1 et 15.")
                     
                     if not (self.board[nombre - 1][lettre - 1] == ' '):
                         raise ValueError("Cette case a déjà été jouée.")

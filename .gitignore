@@ -1,0 +1,6 @@
+stats.csv
+statspair.csv
+statsTemoin.csv
+statsTemoin2.csv
+*.pyc
+.idea/
