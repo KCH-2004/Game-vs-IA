@@ -25,9 +25,9 @@ Windows
 winget install python.python.3
 ```
 
-##Compilation et exécution
+## Compilation et exécution
 
-###Depuis un terminal
+### Depuis un terminal
  1. Se placer à la racine du projet 
 ```bash
 cd Game-vs-IA
