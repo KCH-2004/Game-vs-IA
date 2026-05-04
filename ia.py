@@ -4,7 +4,7 @@ import random
 
 class AI:
 
-    def __init__(self, jetonAI, jetonJoueur, depth, playstyle):
+    def __init__(self, jetonAI, jetonJoueur, depth, playstyle, heuristic="exponentielle"):
         """Constructeur: Crée l'IA"""
         self.jetonAI = jetonAI
         self.jetonJoueur = jetonJoueur
@@ -14,7 +14,12 @@ class AI:
         self.tempsReflexion = None
 
         self.memoization = {}
-        self.eval_score = {0: 0, 1: 2, 2: 20, 3: 200, 4: 20000, 5: 2000000}
+        self.eval_score = heuristic
+
+        if heuristic == "lineaire":
+            self.eval_score = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5}
+        else:
+            self.eval_score = {0: 0, 1: 2, 2: 20, 3: 200, 4: 20000, 5: 2000000}
 
     def getDernierCoup(self):
         """self -> string
