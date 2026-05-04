@@ -1,6 +1,6 @@
 # PROJET IA: Implémentation du "Gomoku" avec la possibilité de jouer contre un autre joueur, ou bien de jouer contre une IA procédurale
 ## Présentation
-Ce projet codé en python a pour but d'une part: De pouvoir jouer au Gomoku et de se jouer contre IA procédurale, d'autre part: De pouvoir mesurer les performances des IA entres elles.
+Ce projet en Python a pour but d'une part: De pouvoir jouer au Gomoku et de se jouer contre IA procédurale, d'autre part: De pouvoir mesurer les performances des IA entres elles.
 
 ---
 
@@ -18,7 +18,7 @@ L'implémentation étant fait en python, il est donc nécessaire d'avoir un inte
 Commandes pour installer python:
 Linux (Debian/Ubuntu) 
 ```bash
-sudo apt-get install python
+sudo apt update && sudo apt install python3
 ```
 Windows
 ```bash
@@ -33,6 +33,11 @@ winget install python.python.3
 cd Game-vs-IA
 ```
  2. Exécuter le script
+Linux (Debian/Ubuntu) 
+```bash
+python3 main.py
+```
+Windows:
 ```bash
 python main.py
 ```
@@ -43,5 +48,6 @@ Importer le dossier `Game-vs-IA` comme projet python et exécuter la classe `Mai
 
 ## Auteurs
 
-- Rayan Defoor
 - Kevin Chen
+- Rayan Defoor
+
