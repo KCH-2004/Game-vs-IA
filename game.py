@@ -218,7 +218,7 @@ class Gomoku:
                 result = botJeu.get_best_move(self)
                 self.board[result[1][0]][result[1][1]] = jetonAI  # Placement du jeton calculé
 
-                if count > 6:  # on vérifie la victoire à partir du 7eme coup (impossible de gagner avant)
+                if count > 8:  # on vérifie la victoire à partir du 7eme coup (impossible de gagner avant)
                     win = self.check_win(result[1][0], result[1][1], jetonAI)
 
                     if win:
@@ -285,7 +285,7 @@ class Gomoku:
                 os.system('cls' if os.name == 'nt' else 'clear')
                 self.show_board()
 
-                if count > 6:  # on vérifie la victoire à partir du 7eme coup
+                if count > 8:  # on vérifie la victoire à partir du 9eme coup
                     win = self.check_win(ligne, colonne, jetonJoueur)
 
                     if win:
@@ -398,7 +398,7 @@ class Gomoku:
             os.system('cls' if os.name == 'nt' else 'clear')
             self.show_board()
 
-            if count > 6:  # on vérifie si un joueur a gagné partir du 7eme coup
+            if count > 8:  # on vérifie si un joueur a gagné partir du 9eme coup
                 win = self.check_win(ligne, colonne, self.jeton[joueur - 1])
 
         # Annonce du gagnant de la manche
